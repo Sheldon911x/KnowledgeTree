@@ -1,0 +1,1633 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RAG 从入门到落地 — 交互式全流程教程</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+SC:wght@400;500;600;700;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<style>
+/* ===== Reset & Base ===== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; font-size: 16px; }
+body {
+  font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: #f5f6fa; color: #2d3436; line-height: 1.7;
+  padding-bottom: 80px; padding-left: 248px;
+}
+
+/* ===== Top Nav ===== */
+.toc-nav {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(255,255,255,0.95); backdrop-filter: blur(12px);
+  border-bottom: 1px solid #e8e8ee; padding: 0 24px; 
+  display: flex; gap: 4px; overflow-x: auto; white-space: nowrap;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+}
+.toc-nav a {
+  display: inline-block; padding: 14px 18px; font-size: 0.875rem;
+  font-weight: 500; color: #636e72; text-decoration: none;
+  border-bottom: 2px solid transparent; transition: all 0.2s;
+}
+.toc-nav a:hover, .toc-nav a.active { color: #4a6cf7; border-bottom-color: #4a6cf7; }
+
+/* ===== Left Sidebar ===== */
+.sidebar {
+  position: fixed; top: 0; left: 0; bottom: 0; width: 248px;
+  background: #fff; border-right: 1px solid #e8e8ee; z-index: 90;
+  overflow-y: auto; padding: 24px 0; box-shadow: 2px 0 8px rgba(0,0,0,0.03);
+}
+.sidebar .sb-brand {
+  padding: 0 22px 18px; font-size: 1.05rem; font-weight: 800; color: #1a1a2e;
+  display: flex; align-items: center; gap: 8px; border-bottom: 1px solid #f0f0f5;
+  margin-bottom: 12px;
+}
+.sidebar .sb-brand .dot {
+  width: 30px; height: 30px; border-radius: 9px; flex-shrink: 0;
+  background: linear-gradient(135deg, #4a6cf7, #7c3aed); color: #fff;
+  display: flex; align-items: center; justify-content: center; font-size: 1rem;
+}
+.sidebar a.sb-link {
+  display: block; padding: 9px 22px; font-size: 0.85rem; font-weight: 500;
+  color: #555; text-decoration: none; border-left: 3px solid transparent;
+  transition: all 0.18s; line-height: 1.4;
+}
+.sidebar a.sb-link:hover { background: #f3f6ff; color: #4a6cf7; }
+.sidebar a.sb-link.active { background: #eef2ff; color: #4a6cf7; border-left-color: #4a6cf7; font-weight: 600; }
+.sidebar .sb-sub {
+  padding: 6px 22px 6px 36px; font-size: 0.78rem; color: #888; text-decoration: none;
+  display: block; border-left: 3px solid transparent; transition: all 0.18s;
+}
+.sidebar .sb-sub:hover { color: #4a6cf7; background: #f8faff; }
+.sidebar .sb-sub.active { color: #4a6cf7; border-left-color: #c0ccf7; font-weight: 600; }
+.sidebar .sb-group-label {
+  padding: 14px 22px 6px; font-size: 0.7rem; font-weight: 700; color: #aaa;
+  text-transform: uppercase; letter-spacing: 0.5px;
+}
+
+/* ===== Sections ===== */
+.section {
+  max-width: 1100px; margin: 0 auto; padding: 48px 24px;
+}
+.section-title {
+  font-size: 1.75rem; font-weight: 800; color: #1a1a2e;
+  margin-bottom: 8px; display: flex; align-items: center; gap: 10px;
+}
+.section-title .num {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 40px; height: 40px; border-radius: 12px;
+  background: linear-gradient(135deg, #4a6cf7, #6c8cff);
+  color: #fff; font-size: 1.1rem; font-weight: 700; flex-shrink: 0;
+}
+.section-subtitle { color: #636e72; font-size: 1rem; margin-bottom: 32px; }
+
+/* ===== Hero ===== */
+.hero {
+  text-align: center; padding: 60px 24px 40px;
+  background: linear-gradient(135deg, #f0f4ff 0%, #e8f0fe 50%, #f0f8ff 100%);
+  border-bottom: 1px solid #dce3f0;
+}
+.hero h1 {
+  font-size: 2.6rem; font-weight: 900; color: #1a1a2e;
+  background: linear-gradient(135deg, #4a6cf7, #7c3aed);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text; margin-bottom: 12px;
+}
+.hero .tagline { font-size: 1.15rem; color: #636e72; margin-bottom: 24px; }
+.hero .badges { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+.hero .badge {
+  padding: 6px 16px; border-radius: 20px; font-size: 0.8rem; font-weight: 600;
+  background: #fff; color: #4a6cf7; border: 1.5px solid #d0d8ff;
+}
+
+/* ===== Pipeline Diagram ===== */
+.pipeline-container {
+  background: #fff; border-radius: 16px; padding: 32px 24px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.05); overflow-x: auto;
+}
+.pipeline-row {
+  display: flex; align-items: center; gap: 6px; margin-bottom: 16px;
+  flex-wrap: nowrap; min-width: fit-content;
+}
+.pipeline-row:last-child { margin-bottom: 0; }
+.pipeline-label {
+  font-size: 0.7rem; font-weight: 700; writing-mode: vertical-lr;
+  padding: 6px 10px; border-radius: 8px; min-height: 100px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; letter-spacing: 1px;
+}
+.pipeline-label.write { background: #e8f5e9; color: #2e7d32; }
+.pipeline-label.read  { background: #e3f2fd; color: #1565c0; }
+
+.pipe-step {
+  background: #fff; border: 2px solid #e0e0e8; border-radius: 12px;
+  padding: 12px 16px; cursor: pointer; transition: all 0.25s;
+  text-align: center; min-width: 100px; flex-shrink: 0;
+  position: relative; user-select: none;
+}
+.pipe-step:hover { border-color: #4a6cf7; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(74,108,247,0.15); }
+.pipe-step.selected { border-color: #4a6cf7; background: #f0f4ff; box-shadow: 0 4px 16px rgba(74,108,247,0.2); }
+.pipe-step .step-num {
+  font-size: 0.65rem; font-weight: 700; color: #4a6cf7; margin-bottom: 4px;
+}
+.pipe-step .step-icon { font-size: 1.5rem; margin-bottom: 4px; }
+.pipe-step .step-name { font-size: 0.8rem; font-weight: 600; color: #2d3436; }
+.pipe-step .step-desc { font-size: 0.68rem; color: #888; margin-top: 2px; }
+
+.pipe-arrow {
+  font-size: 1.2rem; color: #c0c0d0; flex-shrink: 0; font-weight: 700;
+}
+
+.step-detail-panel {
+  margin-top: 24px; background: #f8f9fd; border-radius: 12px;
+  padding: 24px; border-left: 4px solid #4a6cf7; display: none;
+  animation: fadeSlideIn 0.3s ease;
+}
+.step-detail-panel.show { display: block; }
+.step-detail-panel h3 { font-size: 1.1rem; color: #1a1a2e; margin-bottom: 8px; }
+.step-detail-panel p { font-size: 0.9rem; color: #555; margin-bottom: 12px; }
+.step-detail-panel .level-badge {
+  display: inline-block; padding: 2px 10px; border-radius: 10px;
+  font-size: 0.72rem; font-weight: 600; margin-right: 6px;
+}
+.level-badge.beginner { background: #e8f5e9; color: #2e7d32; }
+.level-badge.advanced { background: #fff3e0; color: #e65100; }
+
+@keyframes fadeSlideIn {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ===== Concept Cards ===== */
+.concept-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; }
+.concept-card {
+  background: #fff; border-radius: 14px; padding: 24px; cursor: pointer;
+  border: 2px solid #e8e8ee; transition: all 0.25s;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.04);
+}
+.concept-card:hover { border-color: #4a6cf7; transform: translateY(-3px); box-shadow: 0 6px 20px rgba(74,108,247,0.12); }
+.concept-card .card-num {
+  display: inline-block; padding: 3px 10px; border-radius: 8px;
+  font-size: 0.7rem; font-weight: 700; margin-bottom: 10px;
+}
+.concept-card .card-num.query   { background: #e3f2fd; color: #1565c0; }
+.concept-card .card-num.retrieve{ background: #e8f5e9; color: #2e7d32; }
+.concept-card .card-num.fuse    { background: #fff3e0; color: #e65100; }
+.concept-card .card-num.rerank  { background: #fce4ec; color: #c62828; }
+.concept-card .card-num.chunk   { background: #f3e5f5; color: #6a1b9a; }
+.concept-card .card-num.compress{ background: #e0f7fa; color: #006064; }
+.concept-card .card-num.prompt  { background: #fff8e1; color: #f57f17; }
+.concept-card .card-num.generate{ background: #e8eaf6; color: #283593; }
+.concept-card h3 { font-size: 1.05rem; margin-bottom: 6px; color: #1a1a2e; }
+.concept-card .one-liner { font-size: 0.88rem; color: #555; line-height: 1.6; }
+.concept-card .expand-hint { font-size: 0.72rem; color: #4a6cf7; margin-top: 10px; font-weight: 600; }
+
+/* ===== Concept Modal ===== */
+.modal-overlay {
+  display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.4); z-index: 200;
+  align-items: center; justify-content: center; padding: 24px;
+}
+.modal-overlay.show { display: flex; }
+.modal-dialog {
+  background: #fff; border-radius: 18px; max-width: 720px; width: 100%;
+  max-height: 85vh; overflow-y: auto; padding: 36px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.15); position: relative;
+  animation: modalIn 0.3s ease;
+}
+@keyframes modalIn { from { opacity: 0; transform: scale(0.95) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+.modal-dialog .close-btn {
+  position: absolute; top: 16px; right: 20px;
+  width: 36px; height: 36px; border-radius: 50%; border: 1px solid #ddd;
+  background: #fff; font-size: 1.2rem; cursor: pointer; display: flex;
+  align-items: center; justify-content: center; transition: all 0.2s;
+}
+.modal-dialog .close-btn:hover { background: #f0f0f0; }
+.modal-dialog h2 { font-size: 1.4rem; color: #1a1a2e; margin-bottom: 16px; }
+.modal-dialog h4 { font-size: 1rem; color: #4a6cf7; margin: 20px 0 8px; }
+.modal-dialog p, .modal-dialog li { font-size: 0.9rem; color: #444; }
+.modal-dialog ul { padding-left: 20px; margin-bottom: 12px; }
+.modal-dialog li { margin-bottom: 4px; }
+
+/* ===== Code Blocks ===== */
+.code-block {
+  background: #f7f8fc; border: 1px solid #e0e0e8; border-radius: 10px;
+  padding: 18px; margin: 12px 0; overflow-x: auto;
+  font-family: 'JetBrains Mono', 'Consolas', monospace; font-size: 0.82rem;
+  line-height: 1.6; white-space: pre-wrap; color: #2d3436;
+}
+
+/* ===== Framework Tabs ===== */
+.framework-tabs { display: flex; gap: 4px; margin-bottom: 0; flex-wrap: wrap; }
+.framework-tab {
+  padding: 10px 20px; border-radius: 10px 10px 0 0; cursor: pointer;
+  background: #e8e8ee; border: none; font-size: 0.85rem; font-weight: 600;
+  color: #636e72; transition: all 0.2s; font-family: inherit;
+}
+.framework-tab.active { background: #fff; color: #4a6cf7; box-shadow: 0 -2px 6px rgba(0,0,0,0.04); }
+.framework-content {
+  background: #fff; border-radius: 0 14px 14px 14px; padding: 28px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+}
+.framework-content h3 { font-size: 1.15rem; margin-bottom: 8px; color: #1a1a2e; }
+.framework-content .meta { font-size: 0.8rem; color: #888; margin-bottom: 12px; }
+.framework-content .features { display: flex; gap: 8px; flex-wrap: wrap; margin: 12px 0; }
+.framework-content .feature-tag {
+  padding: 4px 12px; border-radius: 14px; font-size: 0.75rem; font-weight: 500;
+  background: #f0f4ff; color: #4a6cf7;
+}
+
+/* ===== Compare Table ===== */
+.compare-table { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 0.85rem; }
+.compare-table th {
+  background: #f0f4ff; padding: 12px 14px; text-align: left;
+  font-weight: 700; color: #1a1a2e; border-bottom: 2px solid #d0d8ff;
+}
+.compare-table td { padding: 10px 14px; border-bottom: 1px solid #e8e8ee; color: #444; }
+.compare-table tr:hover td { background: #fafbfe; }
+.compare-table .check { color: #2e7d32; font-weight: 700; }
+.compare-table .cross { color: #c62828; }
+
+/* ===== Phase Cards ===== */
+.phase-timeline { position: relative; padding-left: 40px; }
+.phase-timeline::before {
+  content: ''; position: absolute; left: 18px; top: 0; bottom: 0;
+  width: 3px; background: linear-gradient(to bottom, #4a6cf7, #7c3aed, #e040fb);
+  border-radius: 3px;
+}
+.phase-card {
+  background: #fff; border-radius: 14px; padding: 28px; margin-bottom: 24px;
+  border: 1px solid #e8e8ee; position: relative;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+}
+.phase-card::before {
+  content: ''; position: absolute; left: -28px; top: 36px;
+  width: 18px; height: 18px; border-radius: 50%; border: 3px solid #fff;
+  background: #4a6cf7; box-shadow: 0 0 0 2px #4a6cf7;
+}
+.phase-card:nth-child(2)::before { background: #7c3aed; box-shadow: 0 0 0 2px #7c3aed; }
+.phase-card:nth-child(3)::before { background: #e040fb; box-shadow: 0 0 0 2px #e040fb; }
+.phase-card .phase-badge {
+  display: inline-block; padding: 4px 14px; border-radius: 14px;
+  font-size: 0.75rem; font-weight: 700; margin-bottom: 10px;
+}
+.plan-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin: 14px 0; }
+.plan-grid > div { background: #f8f9fd; border-radius: 10px; padding: 14px 16px; border: 1px solid #eef0f6; }
+.plan-grid strong { display: block; font-size: 0.82rem; color: #1a1a2e; margin-bottom: 6px; }
+.plan-grid ul { padding-left: 18px; margin: 0; }
+.plan-grid li { font-size: 0.78rem; color: #555; margin-bottom: 3px; line-height: 1.5; }
+.plan-grid b { color: #4a6cf7; }
+.phase-badge.p1 { background: #e3f2fd; color: #1565c0; }
+.phase-badge.p2 { background: #ede7f6; color: #4527a0; }
+.phase-badge.p3 { background: #fce4ec; color: #c62828; }
+
+/* ===== GitHub Cards ===== */
+.gh-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
+.gh-card {
+  background: #fff; border-radius: 12px; padding: 20px; border: 1px solid #e8e8ee;
+  transition: all 0.25s; text-decoration: none; display: flex; gap: 14px;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.03);
+}
+.gh-card:hover { border-color: #4a6cf7; transform: translateY(-2px); box-shadow: 0 6px 18px rgba(74,108,247,0.1); }
+.gh-card .gh-stars { font-size: 0.78rem; color: #888; white-space: nowrap; }
+.gh-card .gh-icon { font-size: 2rem; flex-shrink: 0; }
+.gh-card .gh-info h4 { font-size: 0.95rem; color: #1a1a2e; }
+.gh-card .gh-info p { font-size: 0.8rem; color: #636e72; margin-top: 4px; }
+
+/* ===== Glossary Sidebar ===== */
+.glossary { 
+  background: #fff; border-radius: 14px; padding: 24px; 
+  border: 1px solid #e8e8ee; box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+.glossary h3 { font-size: 1rem; margin-bottom: 16px; color: #1a1a2e; }
+.glossary dl { display: grid; gap: 12px; }
+.glossary dt { font-weight: 700; font-size: 0.85rem; color: #4a6cf7; }
+.glossary dd { font-size: 0.82rem; color: #555; margin-left: 0; }
+
+/* ===== Responsive ===== */
+@media (max-width: 768px) {
+  body { padding-left: 0; }
+  .sidebar { display: none; }
+  .plan-grid { grid-template-columns: 1fr; }
+  .hero h1 { font-size: 1.8rem; }
+  .section-title { font-size: 1.3rem; }
+  .concept-grid { grid-template-columns: 1fr; }
+  .compare-table { font-size: 0.72rem; }
+  .framework-tabs { gap: 2px; }
+  .framework-tab { padding: 8px 14px; font-size: 0.75rem; }
+  .pipeline-row { gap: 3px; }
+  .pipe-step { padding: 8px 10px; min-width: 70px; }
+  .pipe-step .step-name { font-size: 0.65rem; }
+  .pipe-step .step-icon { font-size: 1.1rem; }
+  .pipe-arrow { font-size: 0.9rem; }
+}
+</style>
+</head>
+<body>
+
+<!-- ===== Top Navigation ===== -->
+<nav class="toc-nav" id="toc">
+  <a href="#hero" class="active">全景</a>
+  <a href="#write-path">写入路径</a>
+  <a href="#read-path">查询路径</a>
+  <a href="#concepts">核心概念</a>
+  <a href="#frameworks">框架选型</a>
+  <a href="#implementation">落地指南</a>
+  <a href="#github">参考项目</a>
+  <a href="#glossary">术语表</a>
+</nav>
+
+<!-- ===== Left Sidebar TOC ===== -->
+<aside class="sidebar" id="sidebar">
+  <div class="sb-brand"><span class="dot">R</span> RAG 教程导航</div>
+  <a href="#hero" class="sb-link">🏠 全景总览</a>
+  <a href="#overview" class="sb-link">① RAG 全景图</a>
+  <a href="#write-path" class="sb-link">② 写入路径</a>
+  <a href="#read-path" class="sb-link">③ 查询路径</a>
+  <a href="#concepts" class="sb-link">④ 核心概念</a>
+  <div class="sb-group-label">核心概念</div>
+  <a href="#concepts" class="sb-sub">· 检索与改写</a>
+  <a href="#concepts" class="sb-sub">· 融合与精排</a>
+  <a href="#concepts" class="sb-sub">· 上下文与生成</a>
+  <a href="#frameworks" class="sb-link">⑤ 框架选型</a>
+  <a href="#implementation" class="sb-link">⑥ 三套落地方案</a>
+  <a href="#plan-compare" class="sb-sub">· 方案对比表</a>
+  <a href="#github" class="sb-link">⑦ GitHub 参考</a>
+  <a href="#glossary" class="sb-link">⑧ 术语速查</a>
+  <div class="sb-group-label">评估</div>
+  <a href="#audit" class="sb-link">⑨ 完整性审计</a>
+</aside>
+
+<!-- ===== 1. Hero ===== -->
+<section class="hero" id="hero">
+  <h1>RAG 从入门到落地</h1>
+  <p class="tagline">检索增强生成 (Retrieval-Augmented Generation) 全流程交互式教程</p>
+  <div class="badges">
+    <span class="badge">入门友好</span>
+    <span class="badge">交互式讲解</span>
+    <span class="badge">生产级参考</span>
+    <span class="badge">持续更新</span>
+  </div>
+</section>
+
+<!-- ===== 2. RAG 全景图 ===== -->
+<section class="section" id="overview">
+  <h2 class="section-title"><span class="num">①</span> RAG 全景图</h2>
+  <p class="section-subtitle">点击每个步骤查看详解 — 两条路线构成了完整的 RAG 系统</p>
+
+  <div class="pipeline-container">
+    <!-- Write Path -->
+    <div style="margin-bottom: 8px; font-size: 0.78rem; font-weight: 700; color: #2e7d32;">写入路径 INDEX PATH（离线/预处理）</div>
+    <div class="pipeline-row" id="write-pipeline">
+      <div class="pipe-step" data-step="w1"><div class="step-num">W1</div><div class="step-icon">📄</div><div class="step-name">文档解析</div><div class="step-desc">PDF/Word/HTML→文本</div></div>
+      <div class="pipe-arrow">→</div>
+      <div class="pipe-step" data-step="w2"><div class="step-num">W2</div><div class="step-icon">✂️</div><div class="step-name">智能分块</div><div class="step-desc">Chunking</div></div>
+      <div class="pipe-arrow">→</div>
+      <div class="pipe-step" data-step="w3"><div class="step-num">W3</div><div class="step-icon">🧮</div><div class="step-name">嵌入生成</div><div class="step-desc">Embedding</div></div>
+      <div class="pipe-arrow">→</div>
+      <div class="pipe-step" data-step="w4"><div class="step-num">W4</div><div class="step-icon">🗂️</div><div class="step-name">索引构建</div><div class="step-desc">向量+关键词</div></div>
+    </div>
+
+    <!-- Read Path -->
+    <div style="margin: 20px 0 8px; font-size: 0.78rem; font-weight: 700; color: #1565c0;">查询路径 QUERY PATH（在线/实时）</div>
+    <div class="pipeline-row" id="read-pipeline">
+      <div class="pipe-step" data-step="r1"><div class="step-num">R1</div><div class="step-icon">💬</div><div class="step-name">用户提问</div></div>
+      <div class="pipe-arrow">→</div>
+      <div class="pipe-step" data-step="r2"><div class="step-num">R2</div><div class="step-icon">🔄</div><div class="step-name">Query 改写</div></div>
+      <div class="pipe-arrow">→</div>
+      <div class="pipe-step" data-step="r3"><div class="step-num">R3</div><div class="step-icon">🔀</div><div class="step-name">混合检索</div><div class="step-desc">向量+BM25</div></div>
+      <div class="pipe-arrow">→</div>
+      <div class="pipe-step" data-step="r4"><div class="step-num">R4</div><div class="step-icon">🎯</div><div class="step-name">RRF 融合</div></div>
+      <div class="pipe-arrow">→</div>
+      <div class="pipe-step" data-step="r5"><div class="step-num">R5</div><div class="step-icon">🔍</div><div class="step-name">精排</div><div class="step-desc">Cross-Encoder</div></div>
+      <div class="pipe-arrow">→</div>
+      <div class="pipe-step" data-step="r6"><div class="step-num">R6</div><div class="step-icon">📦</div><div class="step-name">上下文组装</div></div>
+      <div class="pipe-arrow">→</div>
+      <div class="pipe-step" data-step="r7"><div class="step-num">R7</div><div class="step-icon">🤖</div><div class="step-name">LLM 生成</div></div>
+      <div class="pipe-arrow">→</div>
+      <div class="pipe-step" data-step="r8"><div class="step-num">R8</div><div class="step-icon">✅</div><div class="step-name">带来源回答</div></div>
+    </div>
+
+    <!-- Detail Panel -->
+    <div class="step-detail-panel" id="step-detail"></div>
+  </div>
+</section>
+
+<!-- ===== 3. 写入路径详解 ===== -->
+<section class="section" id="write-path">
+  <h2 class="section-title"><span class="num">②</span> 写入路径：数据怎么"入库"</h2>
+  <p class="section-subtitle">RAG 的质量上限由索引质量决定。没有好的数据准备，再强的检索也白搭。</p>
+
+  <div class="concept-grid">
+    <div class="concept-card" data-concept="doc-parse">
+      <span class="card-num query">W1 文档解析</span>
+      <h3>📄 多格式文档→结构化文本</h3>
+      <p class="one-liner">将 PDF、Word、Markdown、HTML、PPT 等异构文档统一解析为纯文本+表格+图片描述。关键挑战：PDF 排版还原、表格提取、OCR 识别。</p>
+      <p class="expand-hint">点击查看工具选型 →</p>
+    </div>
+    <div class="concept-card" data-concept="chunking">
+      <span class="card-num chunk">W2 智能分块</span>
+      <h3>✂️ 把文档切成合适的"片"</h3>
+      <p class="one-liner">分块大小直接影响检索精度：太大丢失精度，太小丢失上下文。常用策略：固定窗口(512 token)、语义分块(按段落/标题)、递归分块。</p>
+      <p class="expand-hint">点击查看分块策略对比 →</p>
+    </div>
+    <div class="concept-card" data-concept="embedding">
+      <span class="card-num retrieve">W3 向量嵌入</span>
+      <h3>🧮 文本 → 数字向量</h3>
+      <p class="one-liner">将文本块通过 Embedding 模型转为高维向量（如1024维），语义相似的文本向量距离近。中文推荐：BGE-large-zh、m3e-base、text2vec-large-chinese。</p>
+      <p class="expand-hint">点击查看模型推荐 →</p>
+    </div>
+    <div class="concept-card" data-concept="index">
+      <span class="card-num fuse">W4 索引构建</span>
+      <h3>🗂️ 建立"字典"：向量索引+关键词索引</h3>
+      <p class="one-liner">向量索引（HNSW/IVF）用于语义搜索；BM25 倒排索引用于关键词搜索。常见向量库：Chroma(入门)、FAISS(高性能)、Milvus(生产级)。</p>
+      <p class="expand-hint">点击查看向量库对比 →</p>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 4. 查询路径详解 ===== -->
+<section class="section" id="read-path">
+  <h2 class="section-title"><span class="num">③</span> 查询路径：一条请求的 8 步旅程</h2>
+  <p class="section-subtitle">从用户输入到带来源的答案，每一步都在提升答案质量</p>
+
+  <div class="concept-grid" id="read-concept-grid">
+    <div class="concept-card" data-concept="r1">
+      <span class="card-num query">R1</span>
+      <h3>用户提问</h3>
+      <p class="one-liner">起点。可前置意图识别：判断问题是否需要知识库检索，闲聊直接走 LLM。</p>
+    </div>
+    <div class="concept-card" data-concept="r2">
+      <span class="card-num query">R2</span>
+      <h3>Query 改写</h3>
+      <p class="one-liner">将口语化问题转为检索友好表达：同义词扩展、多子查询生成、假想文档(HyDE)。「怎么打这个游戏」→「游戏通关攻略 技巧」</p>
+    </div>
+    <div class="concept-card" data-concept="r3">
+      <span class="card-num retrieve">R3</span>
+      <h3>混合检索：向量+BM25</h3>
+      <p class="one-liner">双路召回，取长补短：向量擅长语义相似（"开心"≈"高兴"），BM25 擅长精确匹配（产品名、编号、日期）。</p>
+    </div>
+    <div class="concept-card" data-concept="r4">
+      <span class="card-num fuse">R4</span>
+      <h3>RRF 融合</h3>
+      <p class="one-liner">两路检索结果分数不可比？不用分数，用排名！RRF 核心公式：score = Σ 1/(k+rank)，k 常取 60。</p>
+    </div>
+    <div class="concept-card" data-concept="r5">
+      <span class="card-num rerank">R5</span>
+      <h3>Cross-Encoder 精排</h3>
+      <p class="one-liner">"粗筛"之后"精选"：用更强的模型对 Top-20 重新评分，取 Top-5。比双编码器慢 100 倍，但准确度大幅提升。</p>
+    </div>
+    <div class="concept-card" data-concept="r6">
+      <span class="card-num compress">R6</span>
+      <h3>上下文组装</h3>
+      <p class="one-liner">父子块扩展+去重+压缩到 8000 token 以内。小块检索精准，大块回补上下文。对表格做结构化还原。</p>
+    </div>
+    <div class="concept-card" data-concept="r7">
+      <span class="card-num generate">R7</span>
+      <h3>LLM 生成+自检</h3>
+      <p class="one-liner">基于检索内容流式生成回答，附带自检纠错(CRAG)：评估生成内容是否被检索结果支撑，不支持的重新检索或标注不确定。</p>
+    </div>
+    <div class="concept-card" data-concept="r8">
+      <span class="card-num prompt">R8</span>
+      <h3>来源标注</h3>
+      <p class="one-liner">关键环节！回答引用粒度：文档级→段落级→句子级。常用做法：将文本块 ID 注入 Prompt，让 LLM 输出引用编号。</p>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 5. 核心概念详解（重点 Step 3-10） ===== -->
+<section class="section" id="concepts">
+  <h2 class="section-title"><span class="num">④</span> 核心概念深度讲解</h2>
+  <p class="section-subtitle">每个概念都拆解为：是什么 — 为什么 — 怎么做 — 入门 vs 进阶</p>
+
+  <div class="concept-grid">
+    <div class="concept-card" data-concept="deep-rewrite">
+      <span class="card-num query">深度</span>
+      <h3>Query 改写技术</h3>
+      <p class="one-liner">不止是同义词扩展。HyDE（用 LLM 生成假想答案再检索）、Multi-Query（拆成多个子问题分别检索）、Step-Back（先抽象再检索）。</p>
+      <p class="expand-hint">点击展开完整讲解 →</p>
+    </div>
+    <div class="concept-card" data-concept="deep-hybrid">
+      <span class="card-num retrieve">深度</span>
+      <h3>混合检索原理</h3>
+      <p class="one-liner">为什么向量+BM25 是黄金组合？稀疏 vs 稠密表示的数学直觉、各自的优势场景、Elasticsearch 和 Milvus 的双路实现。</p>
+      <p class="expand-hint">点击展开完整讲解 →</p>
+    </div>
+    <div class="concept-card" data-concept="deep-rrf">
+      <span class="card-num fuse">深度</span>
+      <h3>RRF 融合算法</h3>
+      <p class="one-liner">为什么不用归一化分数？RRF 的数学原理、k 值调优、与其他融合方法（加权求和、CombSUM/CombMNZ）的对比。</p>
+      <p class="expand-hint">点击展开完整讲解 →</p>
+    </div>
+    <div class="concept-card" data-concept="deep-rerank">
+      <span class="card-num rerank">深度</span>
+      <h3>Cross-Encoder vs Bi-Encoder</h3>
+      <p class="one-liner">双编码器（检索）和交叉编码器（精排）的本质区别：独立编码 vs 联合编码。BGE-Reranker、Cohere Rerank 使用指南。</p>
+      <p class="expand-hint">点击展开完整讲解 →</p>
+    </div>
+    <div class="concept-card" data-concept="deep-chunk">
+      <span class="card-num chunk">深度</span>
+      <h3>父子块与表格处理</h3>
+      <p class="one-liner">Small-to-Big 策略：小粒度检索（→精准），大粒度返回（→完整上下文）。表格需要特殊处理：结构识别+行列关系保留。</p>
+      <p class="expand-hint">点击展开完整讲解 →</p>
+    </div>
+    <div class="concept-card" data-concept="deep-compress">
+      <span class="card-num compress">深度</span>
+      <h3>上下文压缩策略</h3>
+      <p class="one-liner">去重→冗余过滤→LLM 摘要压缩(LLMLingua)。8000 token 是如何得出的？不同模型的窗口差异与自适应策略。</p>
+      <p class="expand-hint">点击展开完整讲解 →</p>
+    </div>
+    <div class="concept-card" data-concept="deep-safety">
+      <span class="card-num prompt">深度</span>
+      <h3>安全护栏设计</h3>
+      <p class="one-liner">输入层：Prompt Injection 检测、敏感词过滤。输出层：幻觉检测、PII 脱敏、越界拒绝。与 Prompt 模板的协同设计。</p>
+      <p class="expand-hint">点击展开完整讲解 →</p>
+    </div>
+    <div class="concept-card" data-concept="deep-selfrag">
+      <span class="card-num generate">深度</span>
+      <h3>自检纠错(Self-RAG/CRAG)</h3>
+      <p class="one-liner">生成后自检：回答是否被检索文本支持？评分→不达标→触发修正（补充检索/标注不确定）。让 LLM 对自己的回答负责。</p>
+      <p class="expand-hint">点击展开完整讲解 →</p>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 6. 框架选型 ===== -->
+<section class="section" id="frameworks">
+  <h2 class="section-title"><span class="num">⑤</span> 主流框架对比</h2>
+  <p class="section-subtitle">点击标签切换框架，了解各自的定位和适合场景</p>
+
+  <div class="framework-tabs">
+    <button class="framework-tab active" data-fw="langchain">LangChain</button>
+    <button class="framework-tab" data-fw="llamaindex">LlamaIndex</button>
+    <button class="framework-tab" data-fw="haystack">Haystack</button>
+    <button class="framework-tab" data-fw="dify">Dify</button>
+    <button class="framework-tab" data-fw="ragflow">RAGFlow</button>
+  </div>
+
+  <div class="framework-content" id="fw-content">
+    <h3>LangChain 🦜🔗</h3>
+    <p class="meta">GitHub Stars: 100k+ | Python + JS | 最热门的 LLM 应用框架</p>
+    <div class="features">
+      <span class="feature-tag">模块化</span><span class="feature-tag">Chain/Agent</span>
+      <span class="feature-tag">生态最大</span><span class="feature-tag">社区活跃</span>
+      <span class="feature-tag">LangSmith 可观测</span>
+    </div>
+    <h4 style="margin-top:16px; font-size:0.9rem;">适合你吗？</h4>
+    <p style="font-size:0.88rem; color:#555;">
+      ✅ 想用最主流的框架<br>
+      ✅ 需要丰富的插件和集成（100+ 文档加载器）<br>
+      ✅ 项目会从简单 Chain 演进到复杂 Agent<br>
+      ⚠️ 封装层次多，入门曲线较陡<br>
+      ⚠️ 版本迭代快，API 不够稳定
+    </p>
+    <div class="code-block">from langchain_community.vectorstores import Chroma
+from langchain_community.embeddings import HuggingFaceEmbeddings
+from langchain.chains import RetrievalQA
+
+# 最简单的 RAG 链路
+vectorstore = Chroma(embedding_function=embeddings)
+qa = RetrievalQA.from_chain_type(
+    llm=llm, chain_type="stuff",
+    retriever=vectorstore.as_retriever()
+)
+answer = qa.run("你的问题")</div>
+  </div>
+
+  <div style="margin-top: 28px;">
+    <table class="compare-table">
+      <thead>
+        <tr>
+          <th>维度</th><th>LangChain</th><th>LlamaIndex</th><th>Haystack</th><th>Dify</th><th>RAGFlow</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>定位</td><td>通用 LLM 框架</td><td>数据/RAG 专用</td><td>生产级 NLP</td><td>低代码平台</td><td>开箱即用 RAG</td></tr>
+        <tr><td>入门难度</td><td>⭐⭐⭐</td><td>⭐⭐</td><td>⭐⭐⭐</td><td>⭐</td><td>⭐</td></tr>
+        <tr><td>数据解析</td><td class="cross">需集成</td><td class="check">内置丰富</td><td class="cross">需集成</td><td class="check">可视化上传</td><td class="check">深度文档解析</td></tr>
+        <tr><td>混合检索</td><td class="check">支持</td><td class="check">原生支持</td><td class="check">支持</td><td class="check">内置</td><td class="check">内置</td></tr>
+        <tr><td>精排</td><td class="cross">需自建</td><td class="check">内置</td><td class="check">内置</td><td class="check">内置</td><td class="check">内置</td></tr>
+        <tr><td>Agent</td><td class="check">最强</td><td class="check">支持</td><td class="check">支持</td><td class="check">工作流</td><td class="cross">有限</td></tr>
+        <tr><td>可观测</td><td>LangSmith</td><td>内置</td><td>Pipeline 日志</td><td>内置面板</td><td>内置</td></tr>
+        <tr><td>生产部署</td><td>需自建</td><td>需自建</td><td class="check">REST API</td><td class="check">一键部署</td><td class="check">Docker</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ===== 7. 落地指南 ===== -->
+<section class="section" id="implementation">
+  <h2 class="section-title"><span class="num">⑥</span> 三套落地方案（固定搭配）</h2>
+  <p class="section-subtitle">不用纠结选型：下面三套是「开箱即用」的固定组合，覆盖从零成本到生产级。先选预算和机器，再照单配置。</p>
+
+  <div class="phase-timeline">
+
+    <!-- Plan A -->
+    <div class="phase-card">
+      <span class="phase-badge p1">方案 A — 入门零成本（纯本地 CPU）</span>
+      <h3>目标：不花一分钱，用现有笔记本跑通一个 RAG Demo</h3>
+      <div class="plan-grid">
+        <div><strong>🧩 固定技术栈</strong>
+          <ul>
+            <li>框架：<b>LlamaIndex</b></li>
+            <li>向量库：<b>Chroma</b>（本地文件）</li>
+            <li>嵌入模型：<b>BGE-small-zh-v1.5</b>（512维，轻量）</li>
+            <li>生成模型：<b>Qwen2.5-3B-Instruct</b>（本地 Ollama 跑）</li>
+            <li>检索：纯向量 + 固定分块 512 token</li>
+          </ul>
+        </div>
+        <div><strong>💰 成本</strong>
+          <ul>
+            <li>软件/API：<b>¥0</b></li>
+            <li>硬件：使用现有电脑</li>
+            <li>电费：可忽略</li>
+            <li>模型下载：约 1.5 GB（一次性）</li>
+          </ul>
+        </div>
+        <div><strong>🖥️ 设备配置要求</strong>
+          <ul>
+            <li>CPU：4 核以上（Intel i5 / R5 起）</li>
+            <li>内存：<b>≥ 8 GB</b>（建议 16 GB）</li>
+            <li>硬盘：<b>≥ 5 GB 空闲</b>（模型+索引）</li>
+            <li>GPU：<b>不需要</b></li>
+            <li>耗时：首次索引约 1-2 分钟/百篇</li>
+          </ul>
+        </div>
+      </div>
+      <div class="code-block"># 一键安装
+pip install llama-index chromadb ollama
+ollama pull qwen2.5:3b
+
+# 跑通（约 20 行代码）
+from llama_index.core import VectorStoreIndex, SimpleDirectoryReader, Settings
+from llama_index.embeddings.huggingface import HuggingFaceEmbedding
+Settings.embed_model = HuggingFaceEmbedding("BAAI/bge-small-zh-v1.5")
+Settings.llm = Ollama(model="qwen2.5:3b")  # 本地生成，零成本
+
+docs = SimpleDirectoryReader("./docs").load_data()
+index = VectorStoreIndex.from_documents(docs)
+print(index.as_query_engine().query("你的问题"))</div>
+    </div>
+
+    <!-- Plan B -->
+    <div class="phase-card">
+      <span class="phase-badge p2">方案 B — 进阶性价比（本地 GPU 或 API 混合）</span>
+      <h3>目标：效果明显提升，混合检索+精排，个人可负担</h3>
+      <div class="plan-grid">
+        <div><strong>🧩 固定技术栈</strong>
+          <ul>
+            <li>框架：<b>LlamaIndex</b> + <b>RAGAS（评估）</b></li>
+            <li>向量库：<b>Qdrant</b>（本地 Docker）</li>
+            <li>嵌入：<b>BGE-large-zh-v1.5</b>（1024维）</li>
+            <li>精排：<b>BGE-Reranker-large</b></li>
+            <li>生成：<b>Qwen2.5-14B</b> 本地 或 <b>GPT-4o-mini</b> API</li>
+            <li>检索：<b>混合检索（向量+BM25）+ RRF</b> + 父子块</li>
+          </ul>
+        </div>
+        <div><strong>💰 成本（二选一）</strong>
+          <ul>
+            <li><b>纯本地 GPU 方案：</b><br>显卡一次性购置 ¥3000-6000（RTX 3060/4060 12G 二手）</li>
+            <li><b>API 混合方案：</b><br>嵌入本地免费 + GPT-4o-mini 生成<br>约 <b>¥0.3-1 / 千次问答</b></li>
+            <li>电费：GPU 满载 ~200W，跑 1 小时 ≈ ¥0.2</li>
+          </ul>
+        </div>
+        <div><strong>🖥️ 设备配置要求</strong>
+          <ul>
+            <li>GPU：<b>≥ 12 GB 显存</b>（精排+14B 生成）</li>
+            <li>无 GPU 时：改用 API 生成，CPU 16G 也能跑</li>
+            <li>内存：<b>≥ 16 GB</b></li>
+            <li>硬盘：<b>≥ 20 GB</b>（模型+索引）</li>
+            <li>耗时：精排 20→5 约 +200ms/次</li>
+          </ul>
+        </div>
+      </div>
+      <div class="code-block"># 混合检索 + 精排（方案B核心）
+from llama_index.core import Settings, VectorStoreIndex
+from llama_index.embeddings.huggingface import HuggingFaceEmbedding
+from llama_index.postprocessor.flag_embedding_reranker import FlagEmbeddingReranker
+from llama_index.llms.openai_like import ...  # 或 Ollama 本地 14B
+
+Settings.embed_model = HuggingFaceEmbedding("BAAI/bge-large-zh-v1.5")
+query_engine = index.as_query_engine(
+    similarity_top_k=20,
+    node_postprocessors=[FlagEmbeddingReranker(model="BAAI/bge-reranker-large", top_n=5)]
+)</div>
+    </div>
+
+    <!-- Plan C -->
+    <div class="phase-card">
+      <span class="phase-badge p3">方案 C — 生产级（云端 / 高配 GPU）</span>
+      <h3>目标：稳定、可并发、可监控，给团队或客户用</h3>
+      <div class="plan-grid">
+        <div><strong>🧩 固定技术栈</strong>
+          <ul>
+            <li>框架：<b>LangChain</b> + <b>LangGraph（Agentic）</b></li>
+            <li>向量库：<b>Milvus</b>（分布式，10亿级）</li>
+            <li>嵌入服务：<b>TEI / Infinity</b>（独立部署）</li>
+            <li>精排：<b>BGE-Reranker-v2-m3</b></li>
+            <li>生成：<b>Qwen2.5-72B</b> 或 GPT-4o（云端）</li>
+            <li>增强：CRAG 自检 + 语义缓存 + Langfuse 监控</li>
+          </ul>
+        </div>
+        <div><strong>💰 成本</strong>
+          <ul>
+            <li>云 GPU 实例：<b>¥2-8 / 小时</b>（A10/A100 按需）</li>
+            <li>或自购显卡：RTX 4090 24G ≈ ¥1.3万</li>
+            <li>向量库托管（Zilliz）：<b>¥0.5-3 / 百万向量/月</b></li>
+            <li>API 生成：GPT-4o 约 ¥10-30 / 百万 token</li>
+            <li>月运维：视流量 ¥500-5000+</li>
+          </ul>
+        </div>
+        <div><strong>🖥️ 设备配置要求</strong>
+          <ul>
+            <li>GPU：<b>≥ 24 GB 显存</b>（72B 量化 / 多模型并发）</li>
+            <li>内存：<b>≥ 32 GB</b></li>
+            <li>硬盘：<b>≥ 100 GB SSD</b></li>
+            <li>并发：需 FastAPI + 负载均衡</li>
+            <li>推荐：直接上云（AutoDL/阿里云 PAI）</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Comparison Table -->
+  <h3 id="plan-compare" style="margin:36px 0 12px; font-size:1.2rem; color:#1a1a2e;">📊 三套方案对比一览</h3>
+  <div style="overflow-x:auto;">
+    <table class="compare-table">
+      <thead>
+        <tr><th>维度</th><th>方案 A · 入门零成本</th><th>方案 B · 进阶性价比</th><th>方案 C · 生产级</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>适用人群</td><td>学生 / 个人尝鲜</td><td>开发者 / 小团队</td><td>团队 / 企业</td></tr>
+        <tr><td>Money 成本</td><td><b>¥0</b></td><td>¥0（纯本地）~¥1/千次（API）</td><td>¥500-5000+/月</td></tr>
+        <tr><td>GPU</td><td>不需要</td><td>≥12G（或纯 API）</td><td>≥24G（或云 GPU）</td></tr>
+        <tr><td>内存</td><td>≥8GB（建议16G）</td><td>≥16GB</td><td>≥32GB</td></tr>
+        <tr><td>硬盘</td><td>≥5GB</td><td>≥20GB</td><td>≥100GB SSD</td></tr>
+        <tr><td>嵌入模型</td><td>BGE-small-zh</td><td>BGE-large-zh</td><td>TEI 服务化</td></tr>
+        <tr><td>生成模型</td><td>Qwen2.5-3B 本地</td><td>Qwen2.5-14B / GPT-4o-mini</td><td>Qwen2.5-72B / GPT-4o</td></tr>
+        <tr><td>混合检索</td><td class="cross">无</td><td class="check">向量+BM25+RRF</td><td class="check">多路+重排</td></tr>
+        <tr><td>精排</td><td class="cross">无</td><td class="check">BGE-Reranker</td><td class="check">多语言 Reranker</td></tr>
+        <tr><td>自检/CRAG</td><td class="cross">无</td><td class="cross">可选</td><td class="check">内置</td></tr>
+        <tr><td>可观测</td><td class="cross">无</td><td class="cross">可选</td><td class="check">Langfuse</td></tr>
+        <tr><td>跑通时长</td><td>0.5-1 天</td><td>1-2 周</td><td>持续迭代</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="section-subtitle" style="margin-top:14px;">👉 选型建议：先 <b>方案 A</b> 验证 idea → 效果不够上 <b>方案 B</b> → 要给别人用再上 <b>方案 C</b>。三套栈可平滑迁移（索引和代码大部分复用）。</p>
+</section>
+
+<!-- ===== 8. GitHub 参考项目 ===== -->
+<section class="section" id="github">
+  <h2 class="section-title"><span class="num">⑦</span> GitHub 参考项目</h2>
+  <p class="section-subtitle">按分类整理的优质开源项目，直接 Star 学起来</p>
+
+  <h4 style="margin:20px 0 12px; color:#1a1a2e;">🚀 框架级</h4>
+  <div class="gh-grid">
+    <a href="https://github.com/run-llama/llama_index" class="gh-card" target="_blank" rel="noopener">
+      <div class="gh-icon">🦙</div>
+      <div class="gh-info"><h4>LlamaIndex</h4><p>RAG 专用框架，数据连接→索引→查询一条龙</p></div>
+    </a>
+    <a href="https://github.com/langchain-ai/langchain" class="gh-card" target="_blank" rel="noopener">
+      <div class="gh-icon">🦜</div>
+      <div class="gh-info"><h4>LangChain</h4><p>最热门的 LLM 应用框架，生态最大</p></div>
+    </a>
+    <a href="https://github.com/deepset-ai/haystack" class="gh-card" target="_blank" rel="noopener">
+      <div class="gh-icon">🌾</div>
+      <div class="gh-info"><h4>Haystack</h4><p>生产级 NLP Pipeline，Pipeline 式架构</p></div>
+    </a>
+  </div>
+
+  <h4 style="margin:24px 0 12px; color:#1a1a2e;">📦 开箱即用 RAG 平台</h4>
+  <div class="gh-grid">
+    <a href="https://github.com/infiniflow/ragflow" class="gh-card" target="_blank" rel="noopener">
+      <div class="gh-icon">🔮</div>
+      <div class="gh-info"><h4>RAGFlow</h4><p>深度文档理解+混合检索，一键部署</p></div>
+    </a>
+    <a href="https://github.com/langgenius/dify" class="gh-card" target="_blank" rel="noopener">
+      <div class="gh-icon">🪄</div>
+      <div class="gh-info"><h4>Dify</h4><p>低代码 LLM 应用平台，可视化编排</p></div>
+    </a>
+    <a href="https://github.com/netease-youdao/QAnything" class="gh-card" target="_blank" rel="noopener">
+      <div class="gh-icon">❓</div>
+      <div class="gh-info"><h4>QAnything</h4><p>网易有道出品，任意文件问答</p></div>
+    </a>
+  </div>
+
+  <h4 style="margin:24px 0 12px; color:#1a1a2e;">🧩 核心组件</h4>
+  <div class="gh-grid">
+    <a href="https://github.com/FlagOpen/FlagEmbedding" class="gh-card" target="_blank" rel="noopener">
+      <div class="gh-icon">🏴</div>
+      <div class="gh-info"><h4>FlagEmbedding (BGE)</h4><p>中文最强开源 Embedding + Reranker 模型</p></div>
+    </a>
+    <a href="https://github.com/chroma-core/chroma" class="gh-card" target="_blank" rel="noopener">
+      <div class="gh-icon">🌈</div>
+      <div class="gh-info"><h4>Chroma</h4><p>最易用的向量数据库，pip install 即用</p></div>
+    </a>
+    <a href="https://github.com/milvus-io/milvus" class="gh-card" target="_blank" rel="noopener">
+      <div class="gh-icon">🦅</div>
+      <div class="gh-info"><h4>Milvus</h4><p>生产级向量数据库，10亿级规模</p></div>
+    </a>
+  </div>
+
+  <h4 style="margin:24px 0 12px; color:#1a1a2e;">📊 评估 & 可观测</h4>
+  <div class="gh-grid">
+    <a href="https://github.com/explodinggradients/ragas" class="gh-card" target="_blank" rel="noopener">
+      <div class="gh-icon">📏</div>
+      <div class="gh-info"><h4>RAGAS</h4><p>RAG 评估框架，检索召回率+忠实度+相关性</p></div>
+    </a>
+    <a href="https://github.com/microsoft/LLMLingua" class="gh-card" target="_blank" rel="noopener">
+      <div class="gh-icon">🔤</div>
+      <div class="gh-info"><h4>LLMLingua</h4><p>微软出品，用 LLM 压缩 Prompt 上下文</p></div>
+    </a>
+    <a href="https://github.com/langfuse/langfuse" class="gh-card" target="_blank" rel="noopener">
+      <div class="gh-icon">🔭</div>
+      <div class="gh-info"><h4>Langfuse</h4><p>LLM 应用全链路可观测与 Tracing</p></div>
+    </a>
+  </div>
+
+  <h4 style="margin:24px 0 12px; color:#1a1a2e;">📚 学习资源</h4>
+  <div class="gh-grid">
+    <a href="https://github.com/ray-project/llm-applications" class="gh-card" target="_blank" rel="noopener">
+      <div class="gh-icon">📖</div>
+      <div class="gh-info"><h4>LLM Applications (Ray)</h4><p>Anyscale 出品的 LLM/RAG 实战教程</p></div>
+    </a>
+    <a href="https://github.com/NirDiamant/RAG_Techniques" class="gh-card" target="_blank" rel="noopener">
+      <div class="gh-icon">🔬</div>
+      <div class="gh-info"><h4>RAG Techniques</h4><p>RAG 所有高级技术的完整实现集合</p></div>
+    </a>
+    <a href="https://github.com/hymie124/RAG_Examples" class="gh-card" target="_blank" rel="noopener">
+      <div class="gh-icon">🏗️</div>
+      <div class="gh-info"><h4>Advanced RAG</h4><p>各种 RAG 范式的实现示例</p></div>
+    </a>
+  </div>
+</section>
+
+<!-- ===== 9. 术语表 ===== -->
+<section class="section" id="glossary">
+  <h2 class="section-title"><span class="num">⑧</span> 术语速查表</h2>
+  <p class="section-subtitle">RAG 世界的黑话，一次查清楚</p>
+
+  <div class="glossary">
+    <h3>🧱 基础概念（What）</h3>
+    <dl>
+      <dt>RAG（Retrieval-Augmented Generation）</dt><dd>检索增强生成：先检索相关知识，再让 LLM 基于这些知识生成回答，减少幻觉。</dd>
+      <dt>Chunking（分块）</dt><dd>将长文档切成小段的过程，直接影响检索精度。块太大丢精度，块太小丢上下文。</dd>
+      <dt>HyDE（Hypothetical Document Embeddings）</dt><dd>假设性文档嵌入：先让 LLM 生成一个假想答案，再用这个答案去检索（而非原始问题）。</dd>
+    </dl>
+
+    <h3>🔢 向量与编码（Embedding Family）</h3>
+    <dl>
+      <dt>Embedding（嵌入/向量化）</dt><dd>将文本转为高维数字向量，语义相近的文本向量距离也近。</dd>
+      <dt>Bi-Encoder（双编码器）</dt><dd>Query 和 Document 分别独立编码，速度快，适合大规模检索（粗排）。</dd>
+      <dt>Cross-Encoder（交叉编码器）</dt><dd>Query 和 Document 拼接后一起编码，精度高但慢，适合精排（Re-rank）。</dd>
+    </dl>
+
+    <h3>🔍 检索与排序（Retrieval Family）</h3>
+    <dl>
+      <dt>BM25</dt><dd>经典关键词检索算法，基于词频和逆文档频率，擅长精确匹配（产品编号、人名、日期）。</dd>
+      <dt>RRF（Reciprocal Rank Fusion）</dt><dd>倒数秩融合：通过排名（而非分数）融合多路检索结果的无监督算法，公式 Σ 1/(k+rank)，k 常取 60。</dd>
+      <dt>HNSW</dt><dd>分层可导航小世界图，最常用的近似最近邻（ANN）向量检索算法之一。</dd>
+    </dl>
+
+    <h3>🛡️ 质量与治理（Quality & Ops）</h3>
+    <dl>
+      <dt>CRAG / Self-RAG</dt><dd>生成后自检：评估回答是否被检索内容支持，不达标则修正或重新检索（Corrective / Self-Reflective RAG）。</dd>
+      <dt>RAGAS</dt><dd>RAG 评估框架，衡量检索召回率（Faithfulness）、答案相关性（Answer Relevancy）等指标。</dd>
+      <dt>LLMLingua</dt><dd>微软的 Prompt 压缩工具，用小型 LLM 精简上下文，减少 Token 消耗。</dd>
+    </dl>
+  </div>
+</section>
+
+<!-- ===== 10. 完整性审计 ===== -->
+<section class="section" id="audit">
+  <h2 class="section-title"><span class="num">⑨</span> 链路完整性审计</h2>
+  <p class="section-subtitle">对照你的 11 步原始链路，逐项核查是否有遗漏。结论：主链路已覆盖，但「写入路径」和「评估闭环」两块是必须补上的。</p>
+
+  <h4 style="margin:18px 0 10px; color:#1a1a2e;">✅ 你原始 11 步的覆盖情况</h4>
+  <div style="overflow-x:auto;">
+    <table class="compare-table">
+      <thead><tr><th>你的步骤</th><th>教程对应</th><th>状态</th><th>备注</th></tr></thead>
+      <tbody>
+        <tr><td>1 用户提问</td><td>R1</td><td class="check">已覆盖</td><td>可加意图识别（闲聊免检索）</td></tr>
+        <tr><td>2 Query 改写</td><td>R2</td><td class="check">已覆盖</td><td>含 HyDE / Multi-Query</td></tr>
+        <tr><td>3 LLM 动态选工具</td><td>—</td><td class="cross">标注为进阶</td><td>属 Agentic RAG，非基础链路必需</td></tr>
+        <tr><td>4 多路召回 向量+BM25</td><td>R3</td><td class="check">已覆盖</td><td>混合检索</td></tr>
+        <tr><td>5 RRF 融合 TOP20</td><td>R4</td><td class="check">已覆盖</td><td>k=60 默认值</td></tr>
+        <tr><td>6 Cross-Encoder 精排 TOP5</td><td>R5</td><td class="check">已覆盖</td><td>BGE-Reranker</td></tr>
+        <tr><td>7 父子块+表格补全</td><td>R6</td><td class="check">已覆盖</td><td>Small-to-Big + 表格结构化还原</td></tr>
+        <tr><td>8 上下文压缩 ≤8000 token</td><td>R6</td><td class="check">已覆盖</td><td>去重+压缩</td></tr>
+        <tr><td>9 Prompt 组装+安全护栏</td><td>R7/R8</td><td class="check">已覆盖</td><td>含三重护栏（输入/检索/输出）</td></tr>
+        <tr><td>10 流式生成+自检纠错</td><td>R7</td><td class="check">已覆盖</td><td>CRAG / Self-RAG</td></tr>
+        <tr><td>11 来源标注答案</td><td>R8</td><td class="check">已覆盖</td><td>文档/段落/句子级引用</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h4 style="margin:24px 0 10px; color:#1a1a2e;">⚠️ 关键遗漏（必须补）</h4>
+  <div class="concept-grid">
+    <div class="concept-card" style="cursor:default;">
+      <span class="card-num write">写入路径</span>
+      <h3>① 数据接入与索引构建（离线）</h3>
+      <p class="one-liner">你的 11 步只描述了「查询路径」。但 RAG 的质量上限由索引决定：文档解析→分块→嵌入→索引。没有这一半，检索无的放矢。教程 ② 写入路径 + ③ 查询路径已补全。</p>
+    </div>
+    <div class="concept-card" style="cursor:default;">
+      <span class="card-num generate">评估闭环</span>
+      <h3>② 评测体系（RAGAS / TruLens）</h3>
+      <p class="one-liner">没有评估就无法迭代。需量化：检索召回率、答案忠实度、相关性。教程 ⑥ 方案B 已引入 RAGAS。</p>
+    </div>
+    <div class="concept-card" style="cursor:default;">
+      <span class="card-num retrieve">缓存与可观测</span>
+      <h3>③ 语义缓存 + 全链路 Trace</h3>
+      <p class="one-liner">相似问题命中缓存可省成本；Langfuse/LangSmith 追踪每一步质量。工程化必备，教程 ⑥ 方案C 已覆盖。</p>
+    </div>
+  </div>
+
+  <h4 style="margin:24px 0 10px; color:#1a1a2e;">💡 可选增强（非必需）</h4>
+  <ul style="padding-left:22px; font-size:0.9rem; color:#555;">
+    <li><strong>多模态 RAG：</strong>图片/图表检索，需多模态 Embedding（如 CLIP）。</li>
+    <li><strong>GraphRAG：</strong>把知识建图，适合复杂关系问答（微软出品）。</li>
+    <li><strong>Agentic RAG：</strong>动态选工具/路由（即你的第 3 步），适合多源异构知识。</li>
+  </ul>
+
+  <div class="step-detail-panel show" style="border-left-color:#2e7d32; margin-top:20px;">
+    <h3>📌 审计结论</h3>
+    <p><b>你的原始链路准确率约 85%</b>，核心查询流程（R1–R8）描述准确，无需大改。两处必须补齐：<b>写入路径（索引构建）</b> 和 <b>评估闭环</b>。第 3 步「动态选工具」属于进阶的 Agentic RAG，基础教程中标注即可，不必在 MVP 阶段实现。其余如缓存、可观测、多模态为锦上添花。</p>
+  </div>
+</section>
+
+<!-- ===== Modal for deep concepts ===== -->
+<div class="modal-overlay" id="concept-modal">
+  <div class="modal-dialog" id="modal-content">
+    <button class="close-btn" onclick="closeModal()">✕</button>
+    <div id="modal-body"></div>
+  </div>
+</div>
+
+<script>
+// ===== Deep concept data =====
+const conceptData = {
+
+  // Write path
+  'doc-parse': {
+    title: '📄 文档解析 — 多格式→结构化文本',
+    content: `<p>文档解析是 RAG 写入路径的第一关，也是最容易被低估的一关。如果这一步做不好，后面的检索、生成都白搭。</p>
+<h4>常见文档类型</h4>
+<ul>
+<li><strong>纯文本：</strong>TXT、Markdown → 最简单，几乎不需要特殊处理</li>
+<li><strong>PDF：</strong>最复杂！排版信息可能丢失、表格难以提取、扫描件需要 OCR</li>
+<li><strong>Word/PPT/Excel：</strong>结构化信息多，需要保留标题层级、表格结构</li>
+<li><strong>网页：</strong>HTML 解析，注意去除导航栏、广告等噪音</li>
+<li><strong>图片：</strong>需要 OCR + 多模态模型（如 GPT-4V）生成描述</li>
+</ul>
+<h4>工具推荐</h4>
+<ul>
+<li><strong>LlamaIndex：</strong>SimpleDirectoryReader 一行代码搞定常见格式</li>
+<li><strong>RAGFlow：</strong>深度文档解析，PDF 排版还原能力强</li>
+<li><strong>Unstructured.io：</strong>专门做文档解析的开源库，支持 20+ 格式</li>
+<li><strong>PyMuPDF (fitz)：</strong>Python 最强大的 PDF 处理库</li>
+<li><strong>Marker：</strong>PDF → Markdown 的专用工具，处理公式和表格</li>
+</ul>
+<h4>入门 vs 进阶</h4>
+<p><span class="level-badge beginner">入门</span>先用 Markdown/TXT 做测试，PDF 用 PyMuPDF 简单提取文本。</p>
+<p><span class="level-badge advanced">进阶</span>结合布局分析保留文档结构、表格用 Table Transformer 识别、图片用多模态模型描述。</p>`
+  },
+  'chunking': {
+    title: '✂️ 智能分块策略',
+    content: `<p>分块是 RAG 最关键的工程决策之一，直接决定了检索精度。核心矛盾：<strong>块越大→上下文越完整但检索精度越低；块越小→检索精准但丢失上下文。</strong></p>
+<h4>常见分块方式</h4>
+<ul>
+<li><strong>固定窗口（Fixed-size）：</strong>最常用。按 token 数切分，重叠 10-20%。简单有效，但不尊重文档结构。</li>
+<li><strong>语义分块（Semantic）：</strong>按段落、标题、自然段落边界切分。尊重文档逻辑，避免了句子被腰斩。</li>
+<li><strong>递归分块（Recursive）：</strong>按分隔符优先级递进切分（\\n\\n → \\n → 空格 → 字符），LangChain 的默认方式。</li>
+<li><strong>句子窗口（Sentence Window）：</strong>句子级检索 + 窗口上下文回补，类似父子块的变体。</li>
+<li><strong>层级分块（Hierarchical）：</strong>按文档树（H1→H2→段落）切分，保留层级关系。</li>
+</ul>
+<h4>入门做法</h4>
+<p>固定窗口 512 token，重叠 50 token。中文 1 token ≈ 1.5 字符，512 token ≈ 350 字。</p>
+<p><span class="level-badge advanced">进阶</span>LlamaIndex 的 SemanticSplitterNodeParser，或 LangChain 的 RecursiveCharacterTextSplitter，加上父子块策略。</p>`
+  },
+  'embedding': {
+    title: '🧮 向量嵌入 — 文本→数字',
+    content: `<p>Embedding 模型将文本映射到高维向量空间。好的 Embedding 让语义相似的文本在空间中靠得近。</p>
+<h4>中文 Embedding 模型推荐</h4>
+<ul>
+<li><strong>BGE-large-zh-v1.5 (BAAI)：</strong>⭐ 中文最强开源之一，1024维，MTEB 中文榜首常客</li>
+<li><strong>m3e-base / m3e-large：</strong>国产开源，768维 / 1024维，轻量好用</li>
+<li><strong>text2vec-large-chinese：</strong>CoSENT 架构，效果稳定</li>
+<li><strong>GTE-large-zh (Alibaba)：</strong>达摩院出品，大模型蒸馏</li>
+<li><strong>Jina-embeddings-v2：</strong>支持 8192 token 长文本嵌入</li>
+</ul>
+<h4>入门做法</h4>
+<p>直接用 HuggingFace 加载 BGE，不需要额外服务：</p>
+<div class="code-block">from langchain_community.embeddings import HuggingFaceBgeEmbeddings
+embeddings = HuggingFaceBgeEmbeddings(
+    model_name="BAAI/bge-large-zh-v1.5"
+)</div>
+<p><span class="level-badge advanced">进阶</span>微调 Embedding 模型（使用 GTE 或 BGE 的微调方案），或部署专用 Embedding 服务（Infinity/TEI）。</p>`
+  },
+  'index': {
+    title: '🗂️ 索引构建 — 向量库选型',
+    content: `<p>向量数据库是 RAG 的存储引擎。选型核心考量：数据量级、部署复杂度、检索性能。</p>
+<h4>向量库对比</h4>
+<div class="code-block">Chroma     → pip install 即用, 10 万级, 最适合入门和原型
+FAISS      → Meta 出品, 百万级, 纯 CPU 也能跑, 无服务端
+Qdrant     → Rust 实现, 百万级, 带过滤和 Payload
+Milvus     → 生产级, 10 亿级, 分布式部署, GPU 加速
+Weaviate   → GraphQL 接口, 自带向量化, 百万级
+Elasticsearch → 已有 ES 的团队首选, 向量+文本混合检索</div>
+<h4>入门做法</h4>
+<p><span class="level-badge beginner">入门</span>Chroma — 一行 pip install，不需要 Docker，本地文件存储。</p>
+<p><span class="level-badge advanced">进阶</span>Qdrant（数据量上升后）→ Milvus（生产环境）。</p>`
+  },
+
+  // Read path
+  'r1': {
+    title: 'R1 用户提问',
+    content: `<p>起点看似简单，但实际可以在这里做很多事：</p>
+<ul>
+<li><strong>意图识别：</strong>分类问题类型——闲聊（直接 LLM）、知识问答（走 RAG）、工具调用（Function Call）</li>
+<li><strong>多轮会话：</strong>将对话历史融入当前 Query（历史改写）</li>
+<li><strong>语言检测：</strong>中英文混合场景下的语言偏好判断</li>
+</ul>
+<p><span class="level-badge beginner">入门</span>不做任何前置处理，直接进入 Query 改写。</p>
+<p><span class="level-badge advanced">进阶</span>加一个简单的分类器（关键词匹配即可，如"今天天气"→闲聊），避免所有问题都走检索。</p>`
+  },
+  'r2': {
+    title: 'R2 Query 改写 — 口语→检索友好',
+    content: `<p>用户输入和知识库中的文档往往是不同的"语言"。Query 改写的本质是把口语化的自然语言转换成更适合检索的表达。</p>
+<h4>改写策略</h4>
+<ul>
+<li><strong>同义词扩展：</strong>"怎么打"→"攻略 技巧 教程"</li>
+<li><strong>多 Query 生成：</strong>把一个问题拆成多个子问题分别检索，合并结果</li>
+<li><strong>HyDE（假设性文档嵌入）：</strong>先让 LLM 生成一个假想答案，用答案去检索——因为答案和知识库文档更相似</li>
+<li><strong>Step-Back Prompting：</strong>把具体问题抽象化，"怎么用 Python 读取 Excel？"→"Python 数据处理 文件读取"</li>
+</ul>
+<h4>入门做法</h4>
+<p><span class="level-badge beginner">入门</span>直接让 LLM 改写，Prompt：将以下用户问题转为适合关键词检索的短语。</p>
+<p><span class="level-badge advanced">进阶</span>HyDE + Multi-Query 组合，用成本更小的模型（如 GPT-3.5）做改写。</p>`
+  },
+  'r3': {
+    title: 'R3 混合检索 — 向量 + BM25',
+    content: `<p><strong>为什么需要两路？</strong></p>
+<p>向量检索（Dense）：擅长语义匹配。"心情不好"能匹配到"情绪低落""抑郁"。但对精确术语（产品编号、人名、日期）效果差。</p>
+<p>BM25 检索（Sparse）：擅长精确匹配。"SKU-12456"能精确命中文档中的"SKU-12456"。但不理解同义词。</p>
+<h4>数学直觉</h4>
+<p>向量检索用余弦相似度：cos(Q, D) = Q·D / (|Q|·|D|)，值越大越相似。</p>
+<p>BM25 公式：score(D, Q) = Σ IDF(qi) × TF(qi, D) × (k1+1) / (TF + k1)，核心是三要素：词频(TF)、逆文档频率(IDF)、文档长度归一化。</p>
+<h4>实现方式</h4>
+<p><span class="level-badge beginner">入门</span>Elasticsearch 8.x 原生支持向量 + BM25 混合检索。</p>
+<p><span class="level-badge advanced">进阶</span>Milvus + Elasticsearch 双引擎，Query 同时发往两边，结果用 RRF 融合。</p>`
+  },
+  'r4': {
+    title: 'R4 RRF 融合 — 倒数秩融合',
+    content: `<p><strong>核心问题：</strong>向量检索返回的分数是相似度（0~1），BM25 返回的分数是关键词匹配分数。两者不可直接比较，如何合并？</p>
+<h4>RRF 公式</h4>
+<div class="code-block">RRF_score(d) = Σ 1 / (k + rank_i(d))
+
+其中：
+  d = 文档
+  k = 常数，通常取 60
+  rank_i(d) = 文档 d 在第 i 路检索中的排名</div>
+<h4>为什么 k=60？</h4>
+<p>k 越大，排名靠后的文档权重衰减越平缓；k=60 是经验值，给高排名文档更大的权重优势。一般来说 k∈[0, 100]，对结果不敏感。</p>
+<h4>RRF vs 其他方法</h4>
+<ul>
+<li><strong>RRF（推荐）：</strong>不需要归一化，无视原始分数量纲差异</li>
+<li><strong>加权求和：</strong>需要先归一化分数（Min-Max 或 Softmax），效果依赖归一化质量</li>
+<li><strong>CombSUM / CombMNZ：</strong>信息检索经典融合方法，CombMNZ 对多路出现的结果加权</li>
+</ul>
+<h4>入门做法</h4>
+<p><span class="level-badge beginner">入门</span>LlamaIndex 内置 RRF 融合：<code>from llama_index.core.retrievers import QueryFusionRetriever</code></p>`
+  },
+  'r5': {
+    title: 'R5 Cross-Encoder 精排',
+    content: `<p><strong>问题：</strong>向量检索引擎（Bi-Encoder）需要把文档提前编码存储，Query 和 Document 是独立编码的。这意味着：Query 和 Document 之间的交互只在相似度计算那一瞬间发生——非常浅。</p>
+<p><strong>方案：</strong>Cross-Encoder 把 Query 和 Document 拼接成一对 "[CLS] Query [SEP] Document [SEP]"，一起输入 Transformer。这使得每个词都能看到对面的每个词，交互充分——但代价是：每个 Query-Doc 对都要重新编码，比 Bi-Encoder 慢 100 倍。</p>
+<h4>Bi-Encoder vs Cross-Encoder</h4>
+<div class="code-block">Bi-Encoder:
+  编码 Query → [q1, q2, ..., qd]     (离线)
+  编码 Doc1  → [d1, d2, ..., dd]     (离线存储)
+  余弦相似度 = cos(q, d)              (在线，极快)
+
+Cross-Encoder:
+  输入 [CLS] Query [SEP] Document [SEP]
+  Transformer 联合编码 → 输出一个分数   (在线，较慢)</div>
+<h4>模型推荐</h4>
+<ul>
+<li><strong>BGE-Reranker-large (BAAI)：</strong>开源最强之一，中文效果好</li>
+<li><strong>BGE-Reranker-v2-m3：</strong>多语言版本</li>
+<li><strong>Cohere Rerank：</strong>商业 API，效果好但收费</li>
+</ul>
+<h4>入门做法</h4>
+<p><span class="level-badge beginner">入门</span>跳过精排，直接用向量检索的 Top-5。效果不够再加重排。</p>
+<p><span class="level-badge advanced">进阶</span>BGE-Reranker 做 20→5 的精排，甚至可以 LLM-as-Reranker（让 GPT-4 直接排序）。</p>`
+  },
+  'r6': {
+    title: 'R6 上下文组装 — 父子块+表格+压缩',
+    content: `<p>检索回来的 Top-5 文档片段需要组装成 LLM 能消化的上下文。这里有三个关键操作：</p>
+<h4>父子块（Parent-Child Chunking / Small-to-Big）</h4>
+<p>核心思想：<strong>用小粒度检索（精准），用大粒度返回（完整上下文）。</strong></p>
+<p>实现方式：索引时同时存储小粒度 Child Chunk（128 token，用于检索）和大粒度 Parent Chunk（1024 token，用于返回）。检索匹配 Child，返回对应的 Parent。</p>
+<p>举例：用户搜"Python 怎么读取 Excel"，命中了小分块"用 pandas 的 read_excel() 函数"，实际返回的是包含这个句子的完整段落（包含参数说明、示例代码）。</p>
+<h4>表格补全</h4>
+<p>表格在分块时容易被切碎——行列关系丢失。需要在返回时做结构化还原：</p>
+<ul>
+<li>将表格作为独立 chunk，不参与文本切分</li>
+<li>存储表格时保留行列结构（转为 Markdown Table 或 List of Dict）</li>
+<li>检索命中表格某个单元格时，返回整个表格</li>
+</ul>
+<h4>上下文压缩</h4>
+<p>检索到的内容可能超过 LLM 上下文窗口。压缩步骤：</p>
+<ol>
+<li><strong>去重：</strong>基于文本相似度去重（MinHash / 向量相似度）</li>
+<li><strong>冗余过滤：</strong>去掉对回答问题无用的段落（如页眉页脚、免责声明）</li>
+<li><strong>LLM 摘要压缩：</strong>用 LLMLingua 等工具让 LLM 生成压缩版上下文</li>
+</ol>
+<p>目标：控制在 4000-8000 token 以内（保证生成质量）。</p>
+<h4>入门做法</h4>
+<p><span class="level-badge beginner">入门</span>用固定 512 分块+简单去重，不做父子块。</p>
+<p><span class="level-badge advanced">进阶</span>LlamaIndex 的 SentenceWindowNodeParser（自动实现句子窗口检索）+ 表格独立 chunk。</p>`
+  },
+  'r7': {
+    title: 'R7 LLM 生成+自检纠错',
+    content: `<p><strong>流式生成：</strong>让用户看到 LLM 逐字输出，提高体验。技术上用 SSE (Server-Sent Events) 或 WebSocket 推送 token。</p>
+<h4>自检纠错（Self-RAG / CRAG）</h4>
+<p>生成后自省：LLM 的回答是否真的被检索内容支撑？</p>
+<div class="code-block">Self-RAG 流程：
+1. LLM 基于检索内容生成回答
+2. LLM 对回答的各部分进行"事实检查" 
+3. 标注每个断言是否被检索内容支持
+4. 不支持的片段 → 重新检索 → 修正回答
+   或标注"根据已有资料，我无法确认…"</div>
+<h4>CRAG（Corrective RAG）流程</h4>
+<ol>
+<li>检索 → 评估检索质量（打分）</li>
+<li>质量高 → 直接生成</li>
+<li>质量中等 → 补充知识图谱/网页搜索修正</li>
+<li>质量低 → 放弃检索结果，直接回答"I don't know"</li>
+</ol>
+<h4>入门做法</h4>
+<p><span class="level-badge beginner">入门</span>不做自检，在 Prompt 中加一句"如果你不确定，请明确说不知道"。</p>
+<p><span class="level-badge advanced">进阶</span>实现 CRAG 的评估-修正循环，或引入 LangGraph 构建修正工作流。</p>`
+  },
+  'r8': {
+    title: 'R8 带来源标注的回答',
+    content: `<p>来源标注是 RAG 的信用背书。没有来源的 AI 回答，用户凭什么信？</p>
+<h4>引用粒度</h4>
+<ul>
+<li><strong>文档级：</strong>"根据《2024 年报》..." — 粗但够用</li>
+<li><strong>段落级：</strong>"根据《2024 年报》第 3 章..." — 更精确</li>
+<li><strong>分块级+编号：</strong>"根据资料 [1] [2]..."，回答中插编号 — 推荐</li>
+</ul>
+<h4>实现方式</h4>
+<div class="code-block"># 方案1：Prompt 注入引用要求
+system_prompt = """
+你是一个知识助手。回答问题时要：
+1. 基于提供的资料片段
+2. 在引用处标注来源编号，如 [1]、[2]
+3. 回答末尾列出所有引用的资料
+"""
+
+# 方案2：LlamaIndex 内置
+query_engine = index.as_query_engine(
+    response_mode="compact",  # 自动标注
+    verbose=True
+)</div>
+<h4>入门做法</h4>
+<p><span class="level-badge beginner">入门</span>回答末尾附上"参考来源"列表（文档名+片段）。</p>
+<p><span class="level-badge advanced">进阶</span>句子级引用+前端可点击跳转到原文。</p>`
+  },
+
+  // Deep concepts
+  'deep-rewrite': {
+    title: '深度：Query 改写技术全景',
+    content: `<p>Query 改写是检索质量的第一道防线。以下是最重要的三种策略：</p>
+<h4>1. HyDE（Hypothetical Document Embeddings）</h4>
+<p>论文：Precise Zero-Shot Dense Retrieval without Relevance Labels</p>
+<p>做法：让 LLM 先根据问题生成一个"假想答案"，用这个假想答案的向量去检索。</p>
+<p>为什么有效：假想答案的文本风格和知识库文档更接近（都是陈述句），比口语化问题更容易匹配。</p>
+<h4>2. Multi-Query / Sub-Query 分解</h4>
+<p>复杂问题拆成多个子问题，分别检索再合并。例："对比 Python 和 Go 在 Web 开发中的优劣" → 拆成"Python Web 开发优势""Go Web 开发优势""Python vs Go 性能对比"。</p>
+<h4>3. Step-Back Prompting</h4>
+<p>具体问题先抽象化，用抽象概念检索更广泛的知识。例："1986年世界杯冠军是谁？"→"历届世界杯冠军名单"→检索到完整名单，再从中提取答案。</p>
+<h4>入门做法</h4>
+<p><span class="level-badge beginner">入门</span>最简单的做法：让 LLM 把问题转成 3-5 个关键词。</p>
+<p><span class="level-badge advanced">进阶</span>HyDE + Multi-Query 组合，用 GPT-3.5 做改写（比 Embedding 便宜）。</p>`
+  },
+  'deep-hybrid': {
+    title: '深度：混合检索的数学本质',
+    content: `<p>为什么向量检索和 BM25 是互补的？</p>
+<h4>稀疏表示（Sparse / BM25）</h4>
+<p>文档被表示为词袋（Bag of Words），每个词对应一个维度。只有出现在文档中的词维度非零。</p>
+<p>优势：精确关键词匹配，对罕见词（IDF 高）特别敏感。</p>
+<p>劣势：词汇鸿沟（Lexical Gap）——"汽车"和"轿车"在向量空间中完全无关。</p>
+<h4>稠密表示（Dense / Embeddings）</h4>
+<p>文档被编码为一个固定维度的稠密向量，所有维度都有值。</p>
+<p>优势：语义匹配，解决词汇鸿沟。</p>
+<p>劣势：对数字、代码、专有名词不敏感。</p>
+<h4>互补场景</h4>
+<div class="code-block">场景1：用户:"有什么省油的车推荐？"
+文档:"丰田卡罗拉油耗仅为4.2L/100km"
+→ 向量能匹配 ✅ | BM25 可能漏 ❌（词不匹配）
+
+场景2：用户:"SKU-88421 库存情况"
+文档:"SKU-88421 当前库存：120件"
+→ BM25 精准命中 ✅ | 向量可能漏 ❌（编号无语义）</div>`
+  },
+  'deep-rrf': {
+    title: '深度：RRF 算法的选择',
+    content: `<h4>RRF 推导</h4>
+<p>假设两路检索结果：</p>
+<div class="code-block">向量检索:  [D3(0.95), D1(0.88), D5(0.76), D2(0.65), D7(0.60)]
+BM25检索:   [D5(12.4), D2(11.2), D1(9.8),  D8(8.5),  D3(7.2)]
+
+直接加权？向量分数(0~1) vs BM25 分数(0~N) —— 不可比！
+RRF 只关心排名，不关心原始分数：
+
+RRF(D3) = 1/(60+1) + 1/(60+5) = 0.0164 + 0.0154 = 0.0318
+RRF(D5) = 1/(60+3) + 1/(60+1) = 0.0159 + 0.0164 = 0.0323  ← D5 赢！
+</div>
+<h4>参数调优</h4>
+<ul>
+<li>k=0 → 只关心第1名（过于激进）</li>
+<li>k=60 → 标准值，平衡</li>
+<li>k=∞ → 所有排名权重相同（无意义）</li>
+<li>实践中 k 在 0~100 范围对结果影响很小</li>
+</ul>
+<h4>入门做法</h4>
+<p><span class="level-badge beginner">入门</span>直接用 k=60 的默认值，不要调参。</p>
+<p><span class="level-badge advanced">进阶</span>如果某路检索明显更可靠，可以考虑加权 RRF。</p>`
+  },
+  'deep-rerank': {
+    title: '深度：精排模型选型指南',
+    content: `<h4>为什么要精排？</h4>
+<p>向量检索是"粗筛"——速度快但精度有限。Cross-Encoder 精排是"精选"——只对 Top-K 候选做精细评分。</p>
+<h4>性能数据参考</h4>
+<div class="code-block">Bi-Encoder (BGE-large):   单次查询 ~5ms
+Cross-Encoder (Reranker): 单个文档对 ~10ms
+                          Top-20 精排 ~200ms (可接受)
+                          Top-100 精排 ~1s (不可接受)</div>
+<h4>开源 Reranker 模型</h4>
+<ul>
+<li><strong>BGE-Reranker-large：</strong>中文质量最高</li>
+<li><strong>BGE-Reranker-v2-m3：</strong>多语言</li>
+<li><strong>bge-reranker-v2-minicpm-layerwise：</strong>小模型也能 Rerank</li>
+<li><strong>gte-multilingual-reranker-base：</strong>阿里出品</li>
+</ul>
+<h4>商业方案</h4>
+<ul>
+<li><strong>Cohere Rerank：</strong>效果最好，但按调用量收费</li>
+<li><strong>Jina Reranker：</strong>开箱即用，支持中文</li>
+<li><strong>Voyage AI Rerank：</strong>Anthropic 推荐</li>
+</ul>`
+  },
+  'deep-chunk': {
+    title: '深度：父子块与表格处理',
+    content: `<p>分块的核心矛盾：<strong>检索精度 vs 上下文完整性。</strong>父子块（Small-to-Big）是最优雅的解决方案。</p>
+<h4>父子块实现</h4>
+<div class="code-block">索引时：
+Parent Chunk (1024 token): "Python 是一门流行的编程语言。
+它支持多种编程范式...pandas 是数据处理库...
+read_excel() 是最常用的函数，参数如下..."
+    │
+    ├── Child 1 (256 token): "Python 是一门..."
+    ├── Child 2 (256 token): "pandas 是数据处理库..."
+    └── Child 3 (256 token): "read_excel() 是最常用..."
+
+检索时：
+用户:"Python 怎么读 Excel" 
+→ 命中 Child 3 → 返回 Parent Chunk（完整段落）</div>
+<h4>表格特殊处理</h4>
+<p>表格有三重挑战：(1) 分块时被切碎；(2) 行列关系丢失；(3) 数字内容无语义。</p>
+<p>方案：</p>
+<ul>
+<li><strong>预处理时识别表格：</strong>用布局分析或 Table Transformer 检测</li>
+<li><strong>表格编码：</strong>转为 Markdown Table、JSON、或自然语言描述</li>
+<li><strong>独立存储：</strong>表格不参与文本分块，作为独立单元</li>
+<li><strong>检索命中时返回整表：</strong>命中表格任意单元格→返回完整表格</li>
+</ul>
+<h4>入门做法</h4>
+<p><span class="level-badge beginner">入门</span>固定分块+重叠，表格先转 Markdown 再分块。</p>
+<p><span class="level-badge advanced">进阶</span>LlamaIndex 的 HierarchicalNodeParser + 表格专用检索。</p>`
+  },
+  'deep-compress': {
+    title: '深度：上下文压缩策略',
+    content: `<p>为什么是 8000 token？这是一个经验阈值：</p>
+<ul>
+<li>大多数 LLM 上下文窗口是 8K-128K，但<strong>长上下文中部的信息容易被忽略</strong>（Lost in the Middle 现象）</li>
+<li>8000 token 通常是"黄金区"——既足够包含丰富上下文，又不会导致注意力衰减</li>
+<li>越短的 Prompt，生成速度越快，成本越低</li>
+</ul>
+<h4>三级压缩策略</h4>
+<div class="code-block">Level 1 — 去重 (0 成本)
+  文本相似度 > 0.95 → 只保留一条
+  工具: MinHash, SimHash, 向量余弦相似度
+
+Level 2 — 冗余过滤 (极低成本)
+  去掉页眉页脚、免责声明、导航栏等噪音
+  规则匹配 + 分类器
+
+Level 3 — LLM 压缩 (有成本)
+  LLMLingua: 用小型 LLM 做选择性压缩
+  LongLLMLingua: 支持更长文本
+  效果: 可以压缩到原来的 1/3~1/5 而不损失关键信息</div>
+<h4>入门做法</h4>
+<p><span class="level-badge beginner">入门</span>简单截断——只取 Top-3 结果，总 < 4000 token。</p>
+<p><span class="level-badge advanced">进阶</span>LLMLingua 选择性压缩，保留对问题最关键的信息。</p>`
+  },
+  'deep-safety': {
+    title: '深度：安全护栏设计',
+    content: `<p>安全护栏（Guardrails）是 RAG 系统的最后一道防线，分三层：</p>
+<h4>输入层安全</h4>
+<ul>
+<li><strong>Prompt Injection 检测：</strong>用户是否尝试劫持系统指令？检测分隔符注入、角色覆盖</li>
+<li><strong>敏感词过滤：</strong>政治敏感、色情暴力内容</li>
+<li><strong>长度限制：</strong>防止超长输入导致拒绝服务</li>
+</ul>
+<h4>检索层安全</h4>
+<ul>
+<li><strong>越界检测：</strong>问题是否在知识库覆盖范围内？</li>
+<li><strong>权限控制：</strong>用户是否有权限访问检索到的文档？</li>
+</ul>
+<h4>输出层安全</h4>
+<ul>
+<li><strong>幻觉检测：</strong>答案是否被检索内容支撑？（NLI 模型判断）</li>
+<li><strong>PII 脱敏：</strong>检测并脱敏身份证号、手机号、银行卡号等</li>
+<li><strong>内容审核：</strong>输出是否包含不当内容</li>
+<li><strong>拒答机制：</strong>"根据现有资料，我无法回答这个问题"</li>
+</ul>
+<h4>入门做法</h4>
+<p><span class="level-badge beginner">入门</span>在 System Prompt 中明确：只回答知识库内的内容，不确定时明确说不知道。</p>
+<p><span class="level-badge advanced">进阶</span>集成 Guardrails AI 或 NVIDIA NeMo Guardrails。</p>`
+  },
+  'deep-selfrag': {
+    title: '深度：自检纠错 — Self-RAG 与 CRAG',
+    content: `<p>传统 RAG 是"一锤子买卖"：检索→生成→结束。但检索可能不准确，生成的回答可能有幻觉。</p>
+<h4>Self-RAG（自我反思 RAG）</h4>
+<p>论文：Self-RAG: Learning to Retrieve, Generate, and Critique through Self-Reflection</p>
+<p>核心流程：</p>
+<ol>
+<li>LLM 按需决定是否检索（On-demand Retrieval）</li>
+<li>逐段生成，每生成一段就自评：相关吗？被检索内容支撑吗？有用吗？</li>
+<li>不达标的段落重新检索、重新生成</li>
+</ol>
+<h4>CRAG（Corrective RAG）</h4>
+<p>核心在"修正"：</p>
+<div class="code-block">1. 检索 → 评估检索质量（检索评估器）
+2. 质量评估:
+   ✅ 正确 → 直接生成
+   ⚠️ 模糊 → 补充 Web 搜索 + 修正
+   ❌ 错误 → 忽略检索结果，回答"不知道"
+3. 拆解 → 对模糊部分做知识提炼
+4. 生成最终答案</div>
+<h4>入门做法</h4>
+<p><span class="level-badge beginner">入门</span>跳过，在 Prompt 中加"不确定请说不知道"。</p>
+<p><span class="level-badge advanced">进阶</span>用 LangGraph 构建 CRAG 工作流（评估→分支→修正→生成）。</p>`
+  }
+};
+
+// ===== Framework data =====
+const frameworkData = {
+  langchain: {
+    title: 'LangChain 🦜🔗',
+    meta: 'GitHub Stars: 100k+ | Python + JS | 最热门的 LLM 应用框架',
+    features: ['模块化 Chain/Agent', '100+ 文档加载器', 'LangSmith 可观测', '社区最活跃'],
+    pros: '想用最主流的框架、需要丰富的插件集成、项目会从简单 Chain 演进到复杂 Agent',
+    cons: '封装层次多，入门曲线较陡；版本迭代快，API 不够稳定；部分抽象过度',
+    code: `from langchain_community.vectorstores import Chroma
+from langchain_community.embeddings import HuggingFaceEmbeddings
+from langchain.chains import RetrievalQA
+
+vectorstore = Chroma(embedding_function=embeddings)
+qa = RetrievalQA.from_chain_type(
+    llm=llm, chain_type="stuff",
+    retriever=vectorstore.as_retriever()
+)
+answer = qa.run("你的问题")`
+  },
+  llamaindex: {
+    title: 'LlamaIndex 🦙',
+    meta: 'GitHub Stars: 35k+ | Python 专用 | RAG 最专业的框架',
+    features: ['RAG 专业化', '内置数据加载器', '丰富的索引结构', '原生混合检索+精排'],
+    pros: 'RAG 专用，API 设计最符合"数据→索引→查询"直觉；内置分块、检索、精排；文档质量高',
+    cons: '非 RAG 场景（如纯 Agent）不如 LangChain；生态规模较小；高级功能文档不够全',
+    code: `from llama_index.core import VectorStoreIndex, SimpleDirectoryReader
+
+documents = SimpleDirectoryReader("./docs").load_data()
+index = VectorStoreIndex.from_documents(documents)
+query_engine = index.as_query_engine()
+response = query_engine.query("你的问题")
+print(response)  # 最简单的 RAG！`
+  },
+  haystack: {
+    title: 'Haystack 🌾 (by deepset)',
+    meta: 'GitHub Stars: 16k+ | Python | 生产级 NLP Pipeline 框架',
+    features: ['Pipeline 式架构', '生产级 REST API', '模块化组件', '企业友好'],
+    pros: '生产环境经过验证；Pipeline 架构清晰可维护；自带 REST API 部署；文档完善',
+    cons: '学习曲线较陡；社区规模较小；中文生态不如 LangChain/LlamaIndex',
+    code: `from haystack import Pipeline
+from haystack.components.retrievers import InMemoryBM25Retriever
+from haystack.components.generators import OpenAIGenerator
+
+pipe = Pipeline()
+pipe.add_component("retriever", InMemoryBM25Retriever(document_store))
+pipe.add_component("generator", OpenAIGenerator())
+pipe.connect("retriever", "generator")
+result = pipe.run({"retriever": {"query": question}})` 
+  },
+  dify: {
+    title: 'Dify 🪄',
+    meta: 'GitHub Stars: 50k+ | 低代码平台 | 可视化编排',
+    features: ['可视化工作流', '知识库管理', '一键部署', '多模型支持'],
+    pros: '零代码搭建 RAG；内置知识库管理+文档解析+混合检索；自带前端界面；部署简单',
+    cons: '定制深度有限；复杂 Agent 场景受限；对开发者来说黑盒',
+    code: `# 无需代码！通过可视化界面：
+# 1. 上传文档创建知识库
+# 2. 选择检索方式（向量+BM25）
+# 3. 配置 Prompt 模板
+# 4. 发布为 API 或聊天应用
+# 适合快速验证想法和原型`
+  },
+  ragflow: {
+    title: 'RAGFlow 🔮',
+    meta: 'GitHub Stars: 28k+ | 深度文档理解 | 一键 Docker 部署',
+    features: ['深度文档解析', '混合检索', 'Docker 部署', '可视化知识库'],
+    pros: '文档解析最强（PDF 排版还原、表格提取）；支持中文文档；一键部署；自带评估',
+    cons: '灵活性不如框架；Agent 能力有限；定制化需要改源码',
+    code: `# Docker 一键部署
+docker run -d -p 80:80 infiniflow/ragflow
+
+# Web 界面操作：
+# 1. 创建知识库 → 上传文档（自动解析）
+# 2. 选择分块策略 + 嵌入模型
+# 3. 启动对话 → 配置 Prompt → 测试
+# 适合需要快速上线、文档质量差的场景`
+  }
+};
+
+// ===== Pipeline step detail data =====
+const pipelineDetails = {
+  'w1': { title: 'W1 文档解析', content: '将 PDF、Word、Markdown、HTML、PPT 等异构文档统一解析为结构化文本。关键挑战：PDF 排版还原、表格提取、扫描件 OCR。工具推荐：Unstructured.io、PyMuPDF、LlamaParse。' },
+  'w2': { title: 'W2 智能分块', content: '把文档切成适合检索的"片段"。核心参数：块大小(256-1024 token)、重叠(10-20%)。策略：固定窗口、语义分块、递归分块、父子块预设。中文推荐 512 token（≈350字）。' },
+  'w3': { title: 'W3 嵌入生成', content: '通过 Embedding 模型将文本块转为高维向量(如1024维)。中文推荐 BGE-large-zh-v1.5、m3e-base。维度选择：量大用 768 维(省存储)，质量优先用 1024 维。' },
+  'w4': { title: 'W4 索引构建', content: '构建两套索引：向量索引(HNSW/IVF算法)用于语义搜索 + BM25 倒排索引用于关键词搜索。入门用 Chroma，生产用 Milvus 或 Qdrant。' },
+  'r1': { title: 'R1 用户提问', content: '可以前置意图识别：判断问题是走 RAG(知识问答)还是直接 LLM(闲聊)。多轮对话场景还需将历史融入当前 Query。' },
+  'r2': { title: 'R2 Query 改写', content: '将口语化问题转为检索友好表达。技术：同义词扩展(汽车→轿车/车辆)、Multi-Query(拆子问题)、HyDE(生成假想答案再检索)。核心目的：拉近用户语言和文档语言的差距。' },
+  'r3': { title: 'R3 混合检索', content: '双路并行：向量检索(语义相似)Top-10 + BM25检索(关键词匹配)Top-10。向量擅长同义词，BM25 擅长精确术语。两路各取 Top-10，共 20 条候选。' },
+  'r4': { title: 'R4 RRF 融合', content: '核心公式：RRF_score = Σ 1/(k + rank)。k 通常取 60。不需要归一化原始分数，只基于排名。向量第1名 + BM25第5名 = 可能是综合第2名。融合后取 Top-20。' },
+  'r5': { title: 'R5 Cross-Encoder 精排', content: '用更强的模型(BGE-Reranker/Cohere Rerank)对融合后的 Top-20 重新评分。双向注意力机制让 Query 和 Document 充分交互。20→5，精度大幅提升。' },
+  'r6': { title: 'R6 上下文组装', content: '三个操作：(1)父子块扩展：命中小块→返回大块完整上下文 (2)表格结构化还原：避免表格被切碎 (3)去重+压缩到 8000 token 以内（LLMLingua 等工具）。' },
+  'r7': { title: 'R7 LLM 生成', content: '流式输出提升体验(SSE推送)。自检纠错：生成后评估是否被检索内容支撑，不达标则重新检索或标注"不确定"。对应 Self-RAG / CRAG 技术。' },
+  'r8': { title: 'R8 来源标注', content: '回答中标注引用来源[1][2]，末尾列出参考资料。实现方式：将 chunk 编号注入 Prompt，要求 LLM 输出引用标记。前端可做可点击跳转。' }
+};
+
+// ===== Pipeline interaction =====
+document.querySelectorAll('.pipe-step').forEach(step => {
+  step.addEventListener('click', function() {
+    // Remove selected from all
+    document.querySelectorAll('.pipe-step').forEach(s => s.classList.remove('selected'));
+    this.classList.add('selected');
+    
+    const stepId = this.dataset.step;
+    const detail = pipelineDetails[stepId];
+    const panel = document.getElementById('step-detail');
+    
+    if (detail) {
+      panel.innerHTML = `<h3>${detail.title}</h3><p>${detail.content}</p>`;
+      panel.classList.add('show');
+    }
+  });
+});
+
+// ===== Concept modal =====
+function openModal(conceptId) {
+  const data = conceptData[conceptId];
+  if (!data) return;
+  
+  const modal = document.getElementById('concept-modal');
+  const body = document.getElementById('modal-body');
+  
+  body.innerHTML = `<h2>${data.title}</h2>${data.content}`;
+  modal.classList.add('show');
+  
+  // Highlight code blocks inside modal
+  setTimeout(() => {
+    modal.querySelectorAll('.code-block').forEach(block => {
+      hljs.highlightElement(block);
+    });
+  }, 100);
+}
+
+function closeModal() {
+  document.getElementById('concept-modal').classList.remove('show');
+}
+
+// Bind concept cards
+document.querySelectorAll('.concept-card[data-concept]').forEach(card => {
+  card.addEventListener('click', () => openModal(card.dataset.concept));
+});
+
+// Close modal on overlay click
+document.getElementById('concept-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+
+// Close modal on Escape
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') closeModal();
+});
+
+// ===== Framework tabs =====
+document.querySelectorAll('.framework-tab').forEach(tab => {
+  tab.addEventListener('click', function() {
+    document.querySelectorAll('.framework-tab').forEach(t => t.classList.remove('active'));
+    this.classList.add('active');
+    
+    const fw = this.dataset.fw;
+    const data = frameworkData[fw];
+    
+    document.getElementById('fw-content').innerHTML = `
+      <h3>${data.title}</h3>
+      <p class="meta">${data.meta}</p>
+      <div class="features">
+        ${data.features.map(f => `<span class="feature-tag">${f}</span>`).join('')}
+      </div>
+      <h4 style="margin-top:16px; font-size:0.9rem;">适合你吗？</h4>
+      <p style="font-size:0.88rem; color:#555;">
+        ✅ ${data.pros.replace(/\n/g, '<br>✅ ')}<br>
+        ⚠️ ${data.cons.replace(/\n/g, '<br>⚠️ ')}
+      </p>
+      <div class="code-block">${data.code}</div>
+    `;
+    
+    setTimeout(() => {
+      document.querySelectorAll('#fw-content .code-block').forEach(block => {
+        hljs.highlightElement(block);
+      });
+    }, 100);
+  });
+});
+
+// Init first framework code highlight
+setTimeout(() => {
+  document.querySelectorAll('#fw-content .code-block').forEach(block => {
+    hljs.highlightElement(block);
+  });
+}, 200);
+
+// ===== Active nav on scroll =====
+const sections = document.querySelectorAll('section[id]');
+const navLinks = document.querySelectorAll('.toc-nav a');
+const sbLinks = document.querySelectorAll('.sidebar a.sb-link');
+const sbSubs = document.querySelectorAll('.sidebar a.sb-sub');
+
+window.addEventListener('scroll', () => {
+  let current = '';
+  sections.forEach(section => {
+    const top = section.offsetTop - 100;
+    if (window.scrollY >= top) current = section.getAttribute('id');
+  });
+  navLinks.forEach(link => {
+    link.classList.remove('active');
+    if (link.getAttribute('href') === '#' + current) link.classList.add('active');
+  });
+  sbLinks.forEach(link => {
+    link.classList.remove('active');
+    if (link.getAttribute('href') === '#' + current) link.classList.add('active');
+  });
+  sbSubs.forEach(link => {
+    link.classList.remove('active');
+    if (link.getAttribute('href') === '#' + current) link.classList.add('active');
+  });
+});
+
+// ===== Smooth nav click =====
+navLinks.forEach(link => {
+  link.addEventListener('click', function(e) {
+    e.preventDefault();
+    const target = document.querySelector(this.getAttribute('href'));
+    if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+});
+sbLinks.forEach(link => {
+  link.addEventListener('click', function(e) {
+    e.preventDefault();
+    const target = document.querySelector(this.getAttribute('href'));
+    if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+});
+sbSubs.forEach(link => {
+  link.addEventListener('click', function(e) {
+    e.preventDefault();
+    const target = document.querySelector(this.getAttribute('href'));
+    if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+});
+</script>
+
+</body>
+</html>
