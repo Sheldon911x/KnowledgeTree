@@ -1,0 +1,1385 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>数据本体 Ontology · 从数据建模到 AI 知识库的完整图景</title>
+<style>
+:root{
+  --bg:#FAF9F7; --surface:#FFFFFF; --surface2:#F3F1ED; --surface3:#EAE7E0;
+  --ink:#191917; --ink2:#55534E; --ink3:#8A877F;
+  --line:rgba(0,0,0,.10); --line2:rgba(0,0,0,.18);
+  --accent:#4C43C4; --accentSoft:#EEEDFE; --accentLine:#B3ADEE;
+  --teal:#0F6E56; --tealSoft:#E1F5EE;
+  --coral:#B33F17; --coralSoft:#FAECE7;
+  --amber:#8A5209; --amberSoft:#FAEEDA;
+  --red:#A32D2D; --redSoft:#FCEBEB;
+  --blue:#185FA5; --blueSoft:#E6F1FB;
+  --green:#3B6D11; --greenSoft:#EAF3DE;
+  --shadow:0 1px 2px rgba(0,0,0,.04),0 8px 24px rgba(0,0,0,.05);
+}
+html[data-theme="dark"]{
+  --bg:#131317; --surface:#1B1B21; --surface2:#23232B; --surface3:#2E2E38;
+  --ink:#ECECF1; --ink2:#A8A8B6; --ink3:#73738A;
+  --line:rgba(255,255,255,.11); --line2:rgba(255,255,255,.2);
+  --accent:#A9A2F2; --accentSoft:#252148; --accentLine:#4E4694;
+  --teal:#63D3AC; --tealSoft:#0E2E27;
+  --coral:#F09A78; --coralSoft:#361B10;
+  --amber:#EDB55C; --amberSoft:#34240B;
+  --red:#F09595; --redSoft:#3A1717;
+  --blue:#8DBBEE; --blueSoft:#11253B;
+  --green:#A9CE72; --greenSoft:#1E2A10;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.25);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif;
+  font-size:16px; line-height:1.75; -webkit-font-smoothing:antialiased;
+}
+code,pre,.mono{font-family:"Cascadia Code","JetBrains Mono","SFMono-Regular",Consolas,"Courier New",monospace}
+#bar{position:fixed;top:0;left:0;height:2px;background:var(--accent);width:0;z-index:99;transition:width .1s}
+.wrap{display:flex;gap:40px;max-width:1400px;margin:0 auto;padding:0 32px}
+nav{width:238px;flex:none;position:sticky;top:0;height:100vh;overflow-y:auto;padding:32px 0 60px;scrollbar-width:thin}
+nav::-webkit-scrollbar{width:4px}nav::-webkit-scrollbar-thumb{background:var(--line2);border-radius:2px}
+nav .navtitle{font-size:11px;letter-spacing:.14em;color:var(--ink3);margin:0 0 14px 12px;text-transform:uppercase}
+nav a{display:block;padding:6px 12px;font-size:13px;color:var(--ink2);text-decoration:none;border-left:2px solid transparent;line-height:1.45}
+nav a:hover{color:var(--ink);background:var(--surface2)}
+nav a.on{color:var(--accent);border-left-color:var(--accent);background:var(--accentSoft)}
+nav .grp{margin-top:16px;font-size:11px;letter-spacing:.1em;color:var(--ink3);padding:0 12px 4px}
+main{flex:1;min-width:0;max-width:940px;padding:0 0 140px}
+section{padding:64px 0 8px;scroll-margin-top:20px}
+.kicker{font-size:12px;letter-spacing:.16em;color:var(--accent);margin:0 0 10px;font-weight:600}
+h1{font-size:38px;line-height:1.3;letter-spacing:-.02em;margin:0 0 18px;font-weight:700}
+h2{font-size:26px;line-height:1.4;letter-spacing:-.01em;margin:0 0 6px;font-weight:650}
+h3{font-size:18px;margin:34px 0 10px;font-weight:650}
+h4{font-size:15px;margin:20px 0 8px;font-weight:650;color:var(--ink)}
+.sub{color:var(--ink2);font-size:15px;margin:0 0 26px}
+p{margin:0 0 16px;color:var(--ink2)}
+p strong,li strong{color:var(--ink);font-weight:650}
+ul,ol{color:var(--ink2);padding-left:22px;margin:0 0 16px}
+li{margin:6px 0}
+hr{border:0;border-top:1px solid var(--line);margin:44px 0}
+a.ext{color:var(--accent);text-decoration:none;border-bottom:1px solid var(--accentLine)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:22px 24px;margin:18px 0}
+.flat{background:var(--surface2);border:none}
+.grid{display:grid;gap:14px}
+.g2{grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+.g3{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+.g4{grid-template-columns:repeat(auto-fit,minmax(160px,1fr))}
+.tag{display:inline-block;font-size:11.5px;padding:2px 9px;border-radius:20px;background:var(--surface3);color:var(--ink2);margin:0 6px 6px 0;letter-spacing:.02em}
+.tag.a{background:var(--accentSoft);color:var(--accent)}
+.tag.t{background:var(--tealSoft);color:var(--teal)}
+.tag.r{background:var(--redSoft);color:var(--red)}
+.tag.m{background:var(--amberSoft);color:var(--amber)}
+.tag.b{background:var(--blueSoft);color:var(--blue)}
+pre{background:var(--surface2);border:1px solid var(--line);border-radius:10px;padding:16px 18px;overflow-x:auto;font-size:13px;line-height:1.7;margin:14px 0;color:var(--ink)}
+pre .k{color:var(--accent)}pre .s{color:var(--teal)}pre .c{color:var(--ink3);font-style:italic}pre .u{color:var(--blue)}pre .n{color:var(--coral)}
+code:not(pre code){background:var(--surface2);padding:1.5px 6px;border-radius:5px;font-size:.88em;border:1px solid var(--line);color:var(--ink)}
+table{width:100%;border-collapse:collapse;font-size:14px;margin:16px 0}
+th{text-align:left;font-weight:650;font-size:12.5px;letter-spacing:.04em;color:var(--ink3);padding:9px 12px;border-bottom:1px solid var(--line2)}
+td{padding:11px 12px;border-bottom:1px solid var(--line);color:var(--ink2);vertical-align:top}
+td:first-child{color:var(--ink);font-weight:600;white-space:nowrap}
+tr:hover td{background:var(--surface2)}
+button{font-family:inherit;font-size:13px;padding:7px 15px;border-radius:8px;border:1px solid var(--line2);background:var(--surface);color:var(--ink);cursor:pointer;transition:.15s}
+button:hover{border-color:var(--accent);color:var(--accent)}
+button.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+button.pri{background:var(--accent);color:#fff;border-color:var(--accent);font-weight:600}
+button.pri:hover{opacity:.88;color:#fff}
+button:disabled{opacity:.4;cursor:not-allowed}
+.btnrow{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0}
+.note{border-left:3px solid var(--accent);background:var(--accentSoft);padding:14px 18px;border-radius:0 10px 10px 0;margin:18px 0;font-size:14.5px;color:var(--ink)}
+.note.w{border-color:var(--amber);background:var(--amberSoft)}
+.note.d{border-color:var(--red);background:var(--redSoft)}
+.note.g{border-color:var(--teal);background:var(--tealSoft)}
+.note b{font-weight:650}
+.gp{background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden;margin:16px 0}
+.gp .head{display:flex;justify-content:space-between;align-items:center;padding:10px 16px;border-bottom:1px solid var(--line);background:var(--surface2);font-size:12.5px;color:var(--ink2);gap:12px;flex-wrap:wrap}
+.gp .body{position:relative}
+svg.canvas{display:block;width:100%;background:transparent}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--ink3);padding:10px 16px;border-top:1px solid var(--line)}
+.legend i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;vertical-align:middle}
+.log{font-size:12.5px;line-height:1.85;padding:12px 16px;border-top:1px solid var(--line);max-height:190px;overflow-y:auto;background:var(--surface2)}
+.log div{color:var(--ink2)}
+.log .ok{color:var(--teal)}.log .bad{color:var(--red)}.log .hi{color:var(--accent)}
+.log .dim{color:var(--ink3)}
+.tabs{display:flex;gap:4px;flex-wrap:wrap;border-bottom:1px solid var(--line);margin:20px 0 0}
+.tabs button{border:none;border-bottom:2px solid transparent;border-radius:0;background:none;padding:9px 14px;color:var(--ink3);font-size:13.5px}
+.tabs button.on{color:var(--accent);border-bottom-color:var(--accent);background:none}
+.pane{display:none;padding-top:18px}.pane.on{display:block}
+.kv{display:flex;gap:10px;font-size:13.5px;padding:7px 0;border-bottom:1px dashed var(--line)}
+.kv b{flex:none;width:96px;color:var(--ink3);font-weight:500;font-size:12.5px;padding-top:1px}
+.kv span{color:var(--ink2)}
+.step{display:flex;gap:14px;padding:14px 0;border-bottom:1px solid var(--line)}
+.step .num{flex:none;width:26px;height:26px;border-radius:50%;background:var(--accentSoft);color:var(--accent);font-size:12.5px;display:flex;align-items:center;justify-content:center;font-weight:650}
+.step:last-child{border-bottom:none}
+.acc{border:1px solid var(--line);border-radius:10px;margin:8px 0;overflow:hidden;background:var(--surface)}
+.acc>.q{padding:13px 16px;cursor:pointer;font-size:14.5px;font-weight:600;display:flex;justify-content:space-between;gap:12px;align-items:center}
+.acc>.q:hover{background:var(--surface2)}
+.acc>.q .ic{color:var(--ink3);font-size:18px;flex:none;line-height:1;transition:.2s}
+.acc.open>.q .ic{transform:rotate(45deg)}
+.acc>.a{display:none;padding:2px 16px 16px;font-size:14px;color:var(--ink2);border-top:1px solid var(--line)}
+.acc.open>.a{display:block}
+.acc>.a p{font-size:14px}
+.slider{width:100%;margin:10px 0}
+input[type=range]{width:100%;accent-color:var(--accent)}
+select,input[type=text]{font-family:inherit;font-size:13px;padding:6px 10px;border-radius:7px;border:1px solid var(--line2);background:var(--surface);color:var(--ink)}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0}
+.chip{font-size:12.5px;padding:5px 11px;border-radius:20px;border:1px solid var(--line2);cursor:pointer;background:var(--surface);color:var(--ink2);transition:.15s;user-select:none}
+.chip:hover{border-color:var(--accent);color:var(--accent)}
+.chip.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+.metric{background:var(--surface2);border-radius:10px;padding:14px 16px}
+.metric .l{font-size:12.5px;color:var(--ink3);margin-bottom:2px}
+.metric .v{font-size:23px;font-weight:650;color:var(--ink);line-height:1.25}
+.metric .v small{font-size:13px;font-weight:400;color:var(--ink2)}
+.themebtn{position:fixed;top:14px;right:18px;z-index:60;width:34px;height:34px;padding:0;border-radius:9px;display:flex;align-items:center;justify-content:center;background:var(--surface);box-shadow:var(--shadow)}
+.hero{padding:74px 0 10px}
+.hero .lead{font-size:19px;line-height:1.75;color:var(--ink2);max-width:720px}
+.bignum{font-size:13px;color:var(--ink3);letter-spacing:.1em}
+.split{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:1080px){nav{display:none}.wrap{padding:0 20px}main{max-width:none}.split{grid-template-columns:1fr}}
+@media(max-width:640px){h1{font-size:29px}h2{font-size:22px}body{font-size:15px}.wrap{padding:0 15px}}
+.fade{animation:fade .45s ease both}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.edge-new{stroke-dasharray:5 4;animation:dash 1.2s linear infinite}
+@keyframes dash{to{stroke-dashoffset:-18}}
+.pulse{animation:pulse 1.4s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.45}}
+.srcs{font-size:12.5px;color:var(--ink3);line-height:1.9}
+.srcs a{color:var(--ink3)}
+.cmp{display:grid;grid-template-columns:1fr 1fr;gap:0;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.cmp>div{padding:16px 18px}
+.cmp>div:first-child{border-right:1px solid var(--line);background:var(--surface)}
+.cmp>div:last-child{background:var(--surface2)}
+.cmp h5{margin:0 0 8px;font-size:13px;letter-spacing:.03em;font-weight:650}
+@media(max-width:640px){.cmp{grid-template-columns:1fr}.cmp>div:first-child{border-right:none;border-bottom:1px solid var(--line)}}
+</style>
+</head>
+<body>
+<div id="bar"></div>
+<button class="themebtn" id="themeBtn" title="切换主题">◐</button>
+
+<div class="wrap">
+<nav id="toc">
+  <p class="navtitle">目录</p>
+  <div class="grp">第一部分 · 建立直觉</div>
+  <a href="#s1">1 一句话讲清数据本体</a>
+  <a href="#s2">2 同一份业务，三种画法</a>
+  <a href="#s3">3 语义阶梯：从词表到本体</a>
+  <div class="grp">第二部分 · 拆解结构</div>
+  <a href="#s4">4 本体的五大构件</a>
+  <a href="#s5">5 三元组实验室</a>
+  <a href="#s6">6 推理引擎：会长出新知识</a>
+  <a href="#s7">7 与数据建模的 14 维对比</a>
+  <a href="#s8">8 技术栈全景图</a>
+  <a href="#s9">9 SPARQL 迷你查询器</a>
+  <div class="grp">第三部分 · AI 知识库</div>
+  <a href="#s10">10 向量 RAG 的八种失效</a>
+  <a href="#s11">11 RAG vs GraphRAG 对照</a>
+  <a href="#s12">12 本体的六大作用</a>
+  <a href="#s13">13 语义层与行动型本体</a>
+  <div class="grp">第四部分 · 落地</div>
+  <a href="#s14">14 行业本体案例库</a>
+  <a href="#s15">15 七步法与能力问题</a>
+  <a href="#s16">16 十大陷阱</a>
+  <a href="#s17">17 工具与上手路线</a>
+  <a href="#s18">18 术语速查</a>
+  <a href="#s19">19 权威来源与可信度</a>
+</nav>
+
+<main>
+
+<div class="hero">
+  <p class="kicker">深度研究 · DATA ONTOLOGY</p>
+  <h1>数据本体<br>从数据建模到 AI 知识库的完整图景</h1>
+  <p class="lead">你熟悉的数据建模，回答的是「数据怎么存」。<br>
+  客户口中的数据本体，回答的是「这些数据到底是什么意思，机器能不能自己想明白」。<br>
+  这份材料从你已有的 ER 建模经验出发，一路走到 LLM 知识库里的 GraphRAG，全程可交互。</p>
+  <div class="grid g4" style="margin-top:30px">
+    <div class="metric"><div class="l">阅读时长</div><div class="v">45<small> 分钟</small></div></div>
+    <div class="metric"><div class="l">交互演示</div><div class="v">9<small> 个</small></div></div>
+    <div class="metric"><div class="l">行业案例</div><div class="v">25<small>+ 个</small></div></div>
+    <div class="metric"><div class="l">建议顺序</div><div class="v">1<small> → 19 顺读</small></div></div>
+  </div>
+</div>
+
+<section id="s1">
+<p class="kicker">01</p>
+<h2>一句话讲清数据本体</h2>
+<p class="sub">先把最容易混淆的三个词一次分清。</p>
+
+<div class="note">
+<b>数据模型（Data Model）</b>：告诉计算机<b>怎么把数据存好</b>——表怎么拆、字段什么类型、索引建在哪。服务对象是<b>存储引擎</b>。<br><br>
+<b>数据本体（Ontology）</b>：告诉计算机<b>这些数据是什么意思、彼此什么关系、什么组合是不合法的</b>。服务对象是<b>推理机和 AI</b>。<br><br>
+<b>知识图谱（Knowledge Graph）</b>：按本体这套「说明书」真正填进去的<b>数据实例</b>。本体是模具，知识图谱是铸件。
+</div>
+
+<h3>教科书定义，逐词拆开</h3>
+<p>1993 年 Tom Gruber 提出定义，经 Borst（1997）补充、Studer 等（1998）定型为学界通用版本：</p>
+<div class="card flat" style="font-size:16px;color:var(--ink);text-align:center;padding:26px">
+An ontology is a <b>formal</b>, <b>explicit</b> specification of a <b>shared</b> <b>conceptualization</b>.
+<div style="font-size:13.5px;color:var(--ink3);margin-top:8px">本体是对共享概念化的一种形式化、明确的规范说明</div>
+</div>
+<p>这四个词每一个都在排除一种常见做法：</p>
+<table>
+<tr><th style="width:110px">关键词</th><th>它要求什么</th><th>它在否定什么</th></tr>
+<tr><td>Conceptualization<br><span style="font-weight:400;color:var(--ink3);font-size:12px">概念化</span></td><td>对一个领域做抽象：有哪些东西、它们之间有什么关系。不是数据，是<b>关于世界的模型</b>。</td><td>否定「照搬源系统表结构」——那是系统的模型，不是业务的模型。</td></tr>
+<tr><td>Shared<br><span style="font-weight:400;color:var(--ink3);font-size:12px">共享</span></td><td>是一群人、一群系统的<b>共识</b>，不是某个建模师的个人偏好。</td><td>否定「每个部门一套口径」——销售的「客户」和财务的「客户」必须能对得上。</td></tr>
+<tr><td>Explicit<br><span style="font-weight:400;color:var(--ink3);font-size:12px">明确</span></td><td>概念、关系、约束必须<b>被写出来</b>，成为可交付的资产。</td><td>否定「隐性知识」——藏在老员工脑子里、代码注释里、Excel 备注里的规则。</td></tr>
+<tr><td>Formal<br><span style="font-weight:400;color:var(--ink3);font-size:12px">形式化</span></td><td>用有确定语义的语言表达，<b>机器可读、可计算、可推理</b>。</td><td>否定「Word 里的数据字典」——人能看懂，机器不能拿它做推导。</td></tr>
+</table>
+
+<div class="note w">
+<b>一个常被误引的细节：</b>「formal, explicit, shared, conceptualization」四个关键词常被笼统说成「Gruber 1993 年提的」。实际上 Gruber 原文只有 <b>explicit specification of a conceptualization</b> 两个词；<b>formal + shared</b> 是 Borst（1997）补上的，四词合流定稿于 Studer 等（1998）。把这个谱系讲准，会让你的材料更经得起推敲。
+</div>
+
+<div class="note g">
+<b>给你的一句话锚点：</b>本体 ≈ 一份<b>机器能执行的业务词典 + 业务规则手册</b>。它把「什么是供应商」「一个零件可以属于几个总成」「被制裁的供应商供货的产品都算高风险」这类知识，从人脑和文档里搬进机器可推理的形式。
+</div>
+
+<h3>为什么你的客户现在开始念叨这个词</h3>
+<p>因为大模型来了。LLM 有惊人的语言能力，但对<b>你们企业内部的世界</b>一无所知：它不知道你们的「在保设备」定义里包不包含延保、不知道「一级供应商」的判定口径、不知道 <code>cust_no</code> 和 <code>party_id</code> 是不是同一个东西。</p>
+<p>向量检索能把相关文本片段捞出来，但捞不出<b>结构</b>。而本体正好提供三样 LLM 极度缺乏的东西：<b>受控的概念边界</b>（消除歧义）、<b>显式的关系网络</b>（支持多跳）、<b>可验证的约束</b>（抑制幻觉）。这就是「AI 运用知识库中的数据本体」这句话的真实含义。</p>
+</section>
+
+<section id="s2">
+<p class="kicker">02</p>
+<h2>同一份业务，三种画法</h2>
+<p class="sub">用一个制造业场景，看关系表、ER 图、本体分别把同一件事说成了什么样。切换下面的视角。</p>
+
+<div class="card">
+<div style="font-size:13.5px;color:var(--ink2);margin-bottom:4px"><b>业务场景</b></div>
+<p style="margin:0;font-size:14.5px">宏远精密向我们供应「轴承 A」，轴承 A 装配进「转向节总成」，总成装进「前悬架」，前悬架装进底盘，最终用于车型 X5。同时，宏远精密也从我们这里采购设备——它既是供应商，也是客户。</p>
+</div>
+
+<div class="btnrow" id="viewBtns">
+  <button class="on" data-v="0">视角 A · 关系表</button>
+  <button data-v="1">视角 B · ER 模型</button>
+  <button data-v="2">视角 C · 本体</button>
+</div>
+<div class="gp"><div class="body" style="padding:20px 22px" id="viewBox"></div></div>
+<div id="viewNote"></div>
+
+<h3>三者的分工，不是三选一</h3>
+<div class="grid g3">
+  <div class="card" style="margin:0"><h4 style="margin-top:0">关系表 / 物理模型</h4><p style="font-size:13.5px;margin:0">面向<b>存储与性能</b>。它的正确性标准是：不冗余、能建索引、事务快。它不关心「供应商」这个词在公司内部有几种理解。</p></div>
+  <div class="card" style="margin:0"><h4 style="margin-top:0">ER / 逻辑模型</h4><p style="font-size:13.5px;margin:0">面向<b>某一个应用系统</b>。它描述这个系统里有哪些实体。换一个系统，同一个业务概念会被画成完全不同的样子。</p></div>
+  <div class="card" style="margin:0"><h4 style="margin-top:0">本体 / 概念层</h4><p style="font-size:13.5px;margin:0">面向<b>整个企业与领域</b>。它描述业务本身，独立于任何系统实现，因此能作为多个系统之间的「共同语言」。</p></div>
+</div>
+
+<div class="note w">
+<b>最关键的一个差别，请重点体会：</b>在 ER 模型里，「供应商」通常是一张表，一条记录要么在供应商表里、要么在客户表里，同一家公司往往被存两遍、ID 还不一样。<br>
+在本体里，「宏远精密」是一个<b>法人实体（Legal Entity）</b>，「供应商」和「客户」是它扮演的<b>角色（Role）</b>。一个实体可以同时属于多个类、扮演多个角色，这叫<b>多重分类（multiple classification）</b>，是本体相对 ER 最本质的表达力提升之一。
+</div>
+</section>
+
+<section id="s3">
+<p class="kicker">03</p>
+<h2>语义阶梯：从词表到本体</h2>
+<p class="sub">「本体」不是一个开关，而是一条连续的语义强度光谱。拖动滑块，看每一级到底多加了什么能力。</p>
+
+<div class="gp">
+  <div class="head"><span>语义强度</span><span id="ladderName" style="color:var(--accent);font-weight:600">—</span></div>
+  <div class="body" style="padding:20px 22px">
+    <input type="range" id="ladder" min="0" max="6" value="0" step="1">
+    <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--ink3);margin-top:-4px">
+      <span>词表</span><span>受控词表</span><span>分类法</span><span>叙词表</span><span>概念模型</span><span>本体</span><span>知识图谱</span>
+    </div>
+    <div id="ladderBox" style="margin-top:22px"></div>
+  </div>
+</div>
+
+<div class="note">
+<b>轻量级 vs 重量级本体：</b>工业界 80% 的所谓「企业本体」其实停在第 4–5 级——有清晰的类层次、命名良好的关系、少量约束，就已经能解决绝大部分数据打通和 AI 落地问题。<b>不要一上来就追求完整的 OWL DL 公理体系</b>，那是学术级重量级本体，建设成本极高且很少有企业真的需要。
+</div>
+</section>
+
+<section id="s4">
+<p class="kicker">04</p>
+<h2>本体的五大构件</h2>
+<p class="sub">点击下面任意一个构件，右侧代码里对应的部分会亮起来。这段 Turtle 就是上一节那个制造业场景的正式写法。</p>
+
+<div class="chips" id="partChips">
+  <span class="chip on" data-p="all">全部</span>
+  <span class="chip" data-p="cls">① 类 Class</span>
+  <span class="chip" data-p="op">② 对象属性 ObjectProperty</span>
+  <span class="chip" data-p="dp">③ 数据属性 DatatypeProperty</span>
+  <span class="chip" data-p="ax">④ 公理 Axiom</span>
+  <span class="chip" data-p="ind">⑤ 个体 Individual</span>
+</div>
+
+<div class="split">
+<div>
+<div id="partDesc" class="card" style="margin-top:0;min-height:250px"></div>
+</div>
+<div>
+<pre id="ttl" style="margin-top:0;font-size:12px;max-height:520px;overflow:auto"></pre>
+</div>
+</div>
+
+<div class="note">
+<b>和 ER 建模的词汇对照（不精确，但便于你迁移直觉）：</b><br>
+类 Class ≈ 实体类型 / 表　·　个体 Individual ≈ 一行记录　·　数据属性 ≈ 普通字段　·　对象属性 ≈ 外键，<b>但对象属性自带名字和语义</b>（<code>:supplies</code> 一眼看懂，<code>supplier_id</code> 要查文档）　·　公理 Axiom ≈ 约束 + 业务规则 + <b>推理规则</b>，这一项在关系模型里<b>没有对应物</b>，它是本体真正的分水岭。
+</div>
+
+<h3>属性特性（Property Characteristics）：一行代码换来的推理能力</h3>
+<p>OWL 允许你给关系本身贴标签，机器读到这些标签就能自动推导。这是本体最具性价比的部分：</p>
+<table>
+<tr><th style="width:190px">特性</th><th>含义</th><th>业务例子</th></tr>
+<tr><td>TransitiveProperty</td><td>A→B、B→C ⇒ A→C</td><td><code>:partOf</code> 零件属于总成、总成属于系统 ⇒ 零件属于系统</td></tr>
+<tr><td>SymmetricProperty</td><td>A→B ⇒ B→A</td><td><code>:isCompatibleWith</code> 兼容性、<code>:关联方</code></td></tr>
+<tr><td>InverseOf</td><td>定义反向关系，自动双向</td><td><code>:supplies</code> ⇄ <code>:suppliedBy</code>，只需录一次</td></tr>
+<tr><td>FunctionalProperty</td><td>一个主体最多一个值</td><td><code>:unifiedCreditCode</code> 统一社会信用代码；出现两个不同值 ⇒ 数据冲突告警</td></tr>
+<tr><td>InverseFunctional</td><td>一个值最多对应一个主体</td><td>信用代码反向唯一 ⇒ <b>可用来自动做实体对齐</b>（两条记录信用代码相同 ⇒ 判定为同一家公司）</td></tr>
+<tr><td>disjointWith</td><td>两个类不可能有共同实例</td><td><code>:自然人</code> 与 <code>:法人</code> 互斥；一旦冲突立即报不一致</td></tr>
+<tr><td>equivalentClass<br>owl:sameAs</td><td>类等价 / 个体等同</td><td>ERP 的「往来单位」= CRM 的「客户主体」；两库主键不同但指同一实体</td></tr>
+</table>
+<div class="note g">
+<b>划重点：<code>owl:InverseFunctionalProperty</code> 是企业主数据管理的隐藏武器。</b>把「统一社会信用代码」「身份证号」「GTIN 商品码」「MAC 地址」这类天然唯一键声明为 InverseFunctional，推理机就能<b>自动</b>把分散在 ERP、CRM、SRM 里的记录判定为同一实体并合并，不需要写一行 ETL 匹配逻辑。
+</div>
+</section>
+
+<section id="s5">
+<p class="kicker">05</p>
+<h2>三元组实验室</h2>
+<p class="sub">本体世界里所有事实都是同一个形状：<b>主语 — 谓语 — 宾语</b>。自己拼几条试试，看图是怎么长出来的。</p>
+
+<div class="gp">
+  <div class="head">
+    <span>拼装一条事实</span>
+    <span><button id="tReset">重置</button> <button id="tDemo">一键演示 8 条</button></span>
+  </div>
+  <div class="body" style="padding:16px 20px">
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <select id="tS" style="min-width:130px"></select>
+      <span style="color:var(--ink3)">—</span>
+      <select id="tP" style="min-width:150px"></select>
+      <span style="color:var(--ink3)">→</span>
+      <select id="tO" style="min-width:130px"></select>
+      <button class="pri" id="tAdd">添加三元组</button>
+    </div>
+    <div id="tHint" style="font-size:12.5px;color:var(--ink3);margin-top:8px;min-height:18px"></div>
+  </div>
+  <svg class="canvas" id="tSvg" viewBox="0 0 880 420" style="height:420px"></svg>
+  <div class="log" id="tLog"><div class="dim">还没有事实。三元组会在这里以 Turtle 语法逐条记录。</div></div>
+</div>
+
+<div class="note">
+<b>三元组的三个惊人之处：</b><br>
+① <b>没有表结构</b>。要加一个新属性？直接加一条三元组，不用 ALTER TABLE，不用停机迁移。<br>
+② <b>天然可合并</b>。两个团队各自产出的三元组集合，直接堆在一起就是一个更大的图——只要他们用同一套 IRI。这在关系库里意味着痛苦的库表整合。<br>
+③ <b>主语宾语都可以是「关系本身」</b>。通过具化（reification）或 RDF-star，你能给一条事实再加事实：「这条『宏远供应轴承A』的记录，来源是 SRM 系统，置信度 0.92，有效期至 2026-12-31」。<b>这就是 AI 知识库做溯源和时效管理的底座。</b>
+</div>
+</section>
+
+<section id="s6">
+<p class="kicker">06</p>
+<h2>推理引擎：知识库会自己长出新知识</h2>
+<p class="sub">这是本体与数据库最不可调和的差异。数据库里查不到就是没有；本体里查不到的东西，可能<b>推得出来</b>。逐条点开下面的规则，看虚线的新知识如何被生成。</p>
+
+<div class="gp">
+  <div class="head">
+    <span>推理演示 · 实线 = 人工录入的事实，虚线 = 机器推导出的新事实</span>
+    <span><button id="rReset">清空推理</button> <button class="pri" id="rAll">全部运行</button></span>
+  </div>
+  <svg class="canvas" id="rSvg" viewBox="0 0 880 430" style="height:430px"></svg>
+  <div class="legend">
+    <span><i style="background:var(--accent)"></i>类 / 概念</span>
+    <span><i style="background:var(--teal)"></i>个体</span>
+    <span><i style="background:var(--coral)"></i>推理新增</span>
+    <span><i style="background:var(--red)"></i>一致性冲突</span>
+  </div>
+  <div style="padding:14px 18px;border-top:1px solid var(--line)">
+    <div class="btnrow" id="ruleBtns" style="margin:0">
+      <button data-r="0">① 子类传递</button>
+      <button data-r="1">② 域/值域类型推断</button>
+      <button data-r="2">③ 传递性 partOf</button>
+      <button data-r="3">④ 逆属性</button>
+      <button data-r="4">⑤ sameAs 实体合并</button>
+      <button data-r="5">⑥ 规则链：风险传导</button>
+      <button data-r="6">⑦ 一致性检查</button>
+    </div>
+  </div>
+  <div class="log" id="rLog"><div class="dim">选择一条规则开始。每条规则会显示：前提 → 结论。</div></div>
+</div>
+
+<h3>两种推理执行方式，工程上要选对</h3>
+<div class="cmp">
+<div><h5 style="color:var(--teal)">物化推理 / 前向链 Forward Chaining</h5>
+<p style="font-size:13.5px;margin:0">数据写入时就把所有能推的结论算出来，实际存进图里。<br><b>优点</b>：查询极快，一次算好反复用。<br><b>缺点</b>：存储膨胀（可能翻几倍）、数据变更时要重算或做增量维护。<br><b>适用</b>：知识相对稳定、查询密集的 AI 知识库。<b>这是企业落地最常见的选择。</b></p></div>
+<div><h5 style="color:var(--blue)">查询时推理 / 后向链 Backward Chaining</h5>
+<p style="font-size:13.5px;margin:0">只存原始事实，查询来了才现场推导。<br><b>优点</b>：不占额外存储、数据永远新鲜。<br><b>缺点</b>：查询慢，复杂公理可能爆炸。<br><b>适用</b>：知识频繁变动、规则复杂、查询稀疏的场景。OWL 2 QL Profile 就是为这条路优化的。</p></div>
+</div>
+
+<div class="note w">
+<b>一个必须理解的心智转变：开放世界假设（OWA）。</b><br>
+在数据库里，「员工表里没有张三」= 「张三不是员工」。这叫封闭世界假设（CWA）。<br>
+在本体里，「图里没有张三是员工的三元组」只等于「<b>我不知道</b>张三是不是员工」，不等于「张三不是员工」。<br><br>
+这不是本体在耍花招，而是符合现实：企业的知识永远是不完整的，你的图谱不可能包含世界上所有事实。<b>但这会让第一次用的人非常困惑</b>——你以为写了 <code>minCardinality 1</code> 就能校验「订单必须有客户」，结果推理机不报错，它只是「推断这个订单存在一个我们还不知道的客户」。<br><br>
+<b>解决方案就是 SHACL。</b>SHACL 用封闭世界 + 唯一命名假设做数据校验，OWL 用开放世界做推理，二者分工明确、配合使用。<b>校验用 SHACL，推理用 OWL——记住这一句就够了。</b>
+</div>
+</section>
+
+<section id="s7">
+<p class="kicker">07</p>
+<h2>本体 vs 传统数据建模：14 维深度对比</h2>
+<p class="sub">这是你作为数据建模出身最需要的一节。逐条点开，每一条都给了「这在实际项目里意味着什么」。</p>
+
+<div id="cmpList"></div>
+
+<div class="note g">
+<b>结论不是「本体取代数据建模」。</b>真实的企业架构里两者共存：<br>
+关系库/数仓继续负责<b>事务与大规模计算</b>；本体层负责<b>概念对齐、跨源打通、语义解释与推理</b>，通过 R2RML / RML / 虚拟化（OBDA，Ontology-Based Data Access）映射到底层数据源。<br>
+你可以把本体理解成架在你现有数仓之上的<b>「语义天花板」</b>——数据还在原地，但机器终于知道它们是什么意思了。
+</div>
+</section>
+
+<section id="s8">
+<p class="kicker">08</p>
+<h2>技术栈全景图</h2>
+<p class="sub">RDF、RDFS、OWL、SHACL、SPARQL 到底是什么关系？一张分层图讲清楚。</p>
+
+<div class="gp"><svg class="canvas" id="stackSvg" viewBox="0 0 880 430" style="height:430px"></svg>
+<div class="log" id="stackLog" style="max-height:none"><div class="dim">把鼠标移到任意一层查看说明。</div></div>
+</div>
+
+<h3>五个标准，一句话各自定位</h3>
+<table>
+<tr><th style="width:96px">标准</th><th style="width:120px">解决什么</th><th>你需要知道的</th></tr>
+<tr><td>RDF</td><td>数据的<b>形状</b></td><td>一切都是 <code>主语-谓语-宾语</code> 三元组。主语和谓语是 IRI（全球唯一地址），宾语可以是 IRI 或字面量（Literal）。加上命名图（Named Graph）就成了四元组，用来标记这批事实的来源。</td></tr>
+<tr><td>RDFS</td><td>最基本的<b>类型系统</b></td><td>只有四件事：<code>rdfs:subClassOf</code>（子类）、<code>rdfs:subPropertyOf</code>（子属性）、<code>rdfs:domain</code>（定义域）、<code>rdfs:range</code>（值域）。<b>极其简单，但 80% 的企业本体用这四个就够了。</b></td></tr>
+<tr><td>OWL</td><td><b>复杂语义与推理</b></td><td>建立在描述逻辑（Description Logic）之上，提供传递性、对称性、逆属性、基数约束、类的交并补、互斥、等价。OWL 2 有三个 Profile：<b>EL</b>（大规模类层次，医疗本体首选）、<b>QL</b>（映射到关系库做查询改写）、<b>RL</b>（规则引擎友好，可用前向链物化）。选 Profile 本质是在<b>表达力和计算复杂度之间做交易</b>。</td></tr>
+<tr><td>SHACL</td><td><b>数据质量校验</b></td><td>W3C 2017 标准。写「形状（Shape）」来约束图：这个节点必须有几个什么类型的值。封闭世界语义，不满足就<b>报错</b>而不是推理。已基本取代早期的 OWL-as-validation 做法。</td></tr>
+<tr><td>SPARQL</td><td><b>查询</b></td><td>图的 SQL。核心是<b>图模式匹配</b>：写一个带变量的子图，引擎去大图里找所有匹配。支持 <code>SELECT / CONSTRUCT / ASK / DESCRIBE</code>，以及<b>属性路径</b>（如 <code>:partOf+</code> 表示任意跳传递），联邦查询（SERVICE）可跨端点查。</td></tr>
+</table>
+
+<div class="note w">
+<b>OWL 与 SHACL 的根本区别（初学者最易混）：OWL 是开放世界 + 推理——缺失只是「未知」，<code>domain/range</code> 是「补全类型」而非「拒绝数据」；SHACL 是封闭世界 + 校验——缺字段就<b>报错</b>。</b>经典反例：若 <code>hasFather</code> 的 <code>rdfs:range</code> 是 <code>Person</code>，只看到 <code>John hasFather Bob</code>，OWL 会<b>推断出 Bob 是 Person</b>，绝不报错。结论：用 OWL 做推理与互操作，用 SHACL 做数据质量校验，别拿 OWL 当校验器。
+</div>
+
+<h3>RDF 三元组图 vs 属性图（LPG）：选型分岔口</h3>
+<p>你调研时一定会撞上这个问题：用 RDF 技术栈（GraphDB / Stardog / Jena / Neptune-RDF），还是用属性图（Neo4j / TigerGraph / NebulaGraph）？</p>
+<div class="cmp">
+<div><h5 style="color:var(--accent)">RDF / 三元组</h5>
+<p style="font-size:13.5px;margin:0 0 8px"><b>强在</b>：W3C 标准化、IRI 全球寻址、天然支持数据集合并与联邦、有成熟的形式化推理（OWL/SHACL）、生态里有大量现成的公共本体可复用。</p>
+<p style="font-size:13.5px;margin:0"><b>弱在</b>：给「关系」加属性不自然（要用 reification 或 RDF-star）、上手陡峭、部分场景查询性能弱于 LPG。</p>
+<p style="font-size:13px;margin:10px 0 0;color:var(--ink3)"><b>选它当：</b>跨组织/跨系统数据整合、监管合规、需要形式化推理与可解释性、要复用行业标准本体（金融、医药）。</p></div>
+<div><h5 style="color:var(--teal)">LPG / 属性图</h5>
+<p style="font-size:13.5px;margin:0 0 8px"><b>强在</b>：节点和边都能直接挂键值属性、开发者心智负担低、Cypher 好写、图算法库（社区发现、中心度、路径）成熟、大规模遍历性能好。</p>
+<p style="font-size:13.5px;margin:0"><b>弱在</b>：无统一标识体系（跨库合并要自己做）、缺乏标准化推理层、schema 弱、可移植性差（不过 GQL 已在 2024 年成为 ISO 标准，正在改善）。</p>
+<p style="font-size:13px;margin:10px 0 0;color:var(--ink3)"><b>选它当：</b>单一组织内的应用型图谱、反欺诈、推荐、社交网络分析、GraphRAG 工程实现。</p></div>
+</div>
+<div class="note">
+<b>现实中的主流答案是「两层架构」：</b>用 RDF/OWL 做<b>本体层</b>（概念、语义、治理、标准复用），把物化后的图<b>投射</b>到 LPG 里做高性能应用与图算法。Neo4j 的 neosemantics（n10s）插件、Stardog、Amazon Neptune 都在往「双模」方向走。<b>对你的项目而言：先把本体（概念模型）想清楚，存储引擎是后面才需要决策的事。</b>
+</div>
+</section>
+
+<section id="s9">
+<p class="kicker">09</p>
+<h2>SPARQL 迷你查询器</h2>
+<p class="sub">不用装任何软件。选一个业务问题，看查询语句长什么样、匹配到图上哪条路径、返回什么结果。这里跑的是一个真实的内存小引擎。</p>
+
+<div class="gp">
+  <div class="head"><span>业务问题</span><span id="qName" style="color:var(--accent)"></span></div>
+  <div class="body" style="padding:14px 18px">
+    <div class="chips" id="qChips"></div>
+    <pre id="qSparql" style="margin:8px 0 0;font-size:12px"></pre>
+  </div>
+  <svg class="canvas" id="qSvg" viewBox="0 0 880 340" style="height:340px;border-top:1px solid var(--line)"></svg>
+  <div style="padding:14px 18px;border-top:1px solid var(--line)">
+    <div id="qResult"></div>
+  </div>
+</div>
+
+<div class="note">
+<b>请特别注意第 3 和第 4 个查询。</b>它们用到了属性路径 <code>:partOf+</code>（沿 partOf 走任意多跳）。<br>
+这类「不知道要 JOIN 几次」的查询，正是关系型 SQL 最难受的地方——你得写递归 CTE，而且深度不确定、性能不可控。<b>而这恰恰是企业里最有价值的一类问题</b>：「这个出问题的零件，最终影响了哪些在售车型？」「这家被制裁的公司，通过多层股权关系控制了我们哪些供应商？」<br>
+<b>你的客户强调本体，八成就是因为他们有这类问题解决不了。</b>
+</div>
+</section>
+
+<section id="s10">
+<p class="kicker">10</p>
+<h2>为什么 AI 时代本体突然火了：向量 RAG 的八种失效</h2>
+<p class="sub">要理解客户为什么执着于本体，得先理解「把文档切片、丢进向量库、检索 top-k、交给大模型」这条主流路线在企业里到底会在哪里翻车。点开每一条看具体的翻车现场。</p>
+
+<div id="failList"></div>
+
+<div class="note d">
+<b>共同的病根只有一个：向量检索只理解「文本长得像」，不理解「业务上是什么关系」。</b><br>
+Embedding 把语义压缩成一个几百维的点，相似度是几何距离。而企业问题的答案往往不在任何一段文本里，<b>它在多条记录之间的关系里</b>。<br>
+本体和知识图谱提供的，正是这个「关系」的显式载体。
+</div>
+</section>
+
+<section id="s11">
+<p class="kicker">11</p>
+<h2>RAG vs GraphRAG：同一个问题，两条路径</h2>
+<p class="sub">问题：<b>「宏远精密如果断供，会影响我们哪些在售车型？」</b>点击运行，看两条链路各自发生了什么。</p>
+
+<div class="gp">
+  <div class="head"><span>检索链路对照</span><span><button class="pri" id="ragRun">▶ 运行对比</button> <button id="ragReset">重置</button></span></div>
+  <div class="body" style="padding:0">
+    <div class="cmp" style="border:none;border-radius:0">
+      <div style="padding:0"><div style="padding:12px 18px;border-bottom:1px solid var(--line);font-size:13px;font-weight:650;color:var(--ink3)">路线 A · 朴素向量 RAG</div><div id="ragA" style="padding:8px 18px 18px"></div></div>
+      <div style="padding:0"><div style="padding:12px 18px;border-bottom:1px solid var(--line);font-size:13px;font-weight:650;color:var(--accent)">路线 B · 本体驱动的 GraphRAG</div><div id="ragB" style="padding:8px 18px 18px"></div></div>
+    </div>
+  </div>
+</div>
+
+<h3>GraphRAG 家族速览</h3>
+<p>2024 年微软开源 GraphRAG 之后，这个方向迅速分化。它们的取舍值得你在选型时知道：</p>
+<table>
+<tr><th style="width:140px">方案</th><th style="width:170px">核心机制</th><th>取舍</th></tr>
+<tr><td>Microsoft<br>GraphRAG</td><td>LLM 抽取实体关系 → 建图 → Leiden 算法做社区检测 → 为每个社区预生成摘要 → local search（局部实体邻域）+ global search（跨社区摘要汇总）</td><td>首次系统性解决了「全局性问题」（如"整份语料的主要主题是什么"）。<b>代价是索引阶段 LLM 调用量极大</b>，大语料成本可观。</td></tr>
+<tr><td>LazyGraphRAG</td><td>推迟昂贵的 LLM 摘要，查询时才按需生成</td><td>微软自己给出的成本优化版，索引成本大幅下降，适合语料大、查询相对稀疏的场景。</td></tr>
+<tr><td>LightRAG</td><td>双层检索（低层实体 + 高层主题），增量更新友好</td><td>轻量、便宜、支持图的增量插入，工程落地门槛低。</td></tr>
+<tr><td>HippoRAG</td><td>借鉴海马体索引理论，用个性化 PageRank 在图上做单步多跳检索</td><td>擅长多跳，检索延迟低于反复调用 LLM 的迭代式方案。</td></tr>
+<tr><td>Graphiti / 时序图</td><td>为图中每条边加上有效时间区间，支持"某时刻的事实状态"</td><td>为 Agent 长期记忆设计，解决"事实会过期"的问题。</td></tr>
+<tr><td>Agentic RAG</td><td>让 Agent 自主决定检索什么、检索几轮、用向量还是用图</td><td>灵活性最高，但可控性和成本需要工程约束。<b>本体在这里充当 Agent 的"地图"</b>，告诉它有哪些概念和路径可走。</td></tr>
+</table>
+
+<div class="note">
+<b>本体在 GraphRAG 里到底起什么作用？关键词是「Schema-Guided Extraction」。</b><br><br>
+让 LLM <b>自由抽取</b>实体和关系，你会得到一张脏图：同一个概念有十几种写法（「宏远」「宏远精密」「宏远精密机械有限公司」），关系名五花八门（「供应」「提供」「supplies」「是…的供应商」），实体类型混乱。这样的图做多跳会到处断链。<br><br>
+先定义本体，把「允许出现的类型和关系」交给 LLM 作为抽取目标（比如"只能抽取 Organization / Part / Assembly 三类实体，只能抽取 supplies / partOf / ownedBy 三种关系"），抽出来的图<b>结构一致、可对齐、可推理</b>。<br><br>
+<b>一句话：没有本体的 GraphRAG，只是把一堆噪音从向量空间搬到了图空间。</b>
+</div>
+
+<h3>到底有多大用：三组可引用的量化证据</h3>
+<p>下面数据来自同行评议论文或厂商技术报告，按可信度分级。给客户讲价值时，前两组一手研究最经得起追问。</p>
+<div class="grid g3">
+ <div class="card" style="margin:0"><h4 style="margin-top:0">本体 vs 裸 Schema 查询</h4><p style="font-size:13px;margin:0 0 8px">data.world（Sequeda 等，arXiv:2311.07509）在 13 张表的企业保险 schema 上对比：GPT-4 直接对 SQL schema 生成查询 <b>16.7%</b> 准确率；同一数据构成本体知识图谱后生成 SPARQL <b>54.2%</b>（指标类题由 0% 显著回升）。</p><span class="tag a">A 级 · 同行评议</span></div>
+ <div class="card" style="margin:0"><h4 style="margin-top:0">本体约束 vs 自由抽取</h4><p style="font-size:13px;margin:0 0 8px">OntoMetric（arXiv:2512.01289，UNSW+CSIRO）在 5 份 ESG 标准（228 页）上：本体约束抽取语义准确率 <b>64.8–89.9%</b>、schema 合规 80%+；无约束自由抽取语义错误率 <b>90.2–100%</b>，3/5 文档零实体通过校验。</p><span class="tag a">A 级 · 同行评议</span></div>
+ <div class="card" style="margin:0"><h4 style="margin-top:0">图不一定总赢</h4><p style="font-size:13px;margin:0 0 8px">Han 等（arXiv:2502.11371）系统评测：纯向量 RAG 在局部事实型问题（who/what/when，答案就在某段里）上<b>更准也更便宜</b>；GraphRAG 优势集中在全局与多跳。别一刀切替换。</p><span class="tag m">平衡视角</span></div>
+</div>
+<div class="note d" style="margin-top:14px">
+<b>引用纪律：</b>网上流传的「幻觉率 18%→9%」「GraphRAG 准确率 90.6% vs 46.9%」「提升 35%」等数字，来源多为营销博客，<b>无公开方法论、无可复现实验</b>，建议不要写进给客户的材料。用上面的 A 级研究，更稳。
+</div>
+</section>
+
+<section id="s12">
+<p class="kicker">12</p>
+<h2>本体在 AI 知识库里的六大作用</h2>
+<p class="sub">如果客户问你「上本体到底能带来什么」，这六条就是答案。</p>
+
+<div class="grid g2" id="sixRoles"></div>
+</section>
+
+<section id="s13">
+<p class="kicker">13</p>
+<h2>语义层与「行动型本体」</h2>
+<p class="sub">学术本体关心「世界是什么样」，企业本体还得关心「能对世界做什么」。这是近几年最重要的一次概念扩展。</p>
+
+<h3>语义层：LLM 与数据之间的翻译官</h3>
+<p>当你让 LLM 直接写 SQL 查你的数仓，它面对的是 <code>dwd_ord_detail_di</code> 这样的表名和 <code>amt_1</code> 这样的字段。它只能猜。猜错了不会报错，只会给你一个看起来很合理的错误数字——<b>这是企业 Text2SQL 落地最大的障碍。</b></p>
+<p>语义层的作用是在物理表之上定义一层业务语义：什么是「有效订单」、「GMV」怎么算、「活跃用户」的口径是什么、哪些维度可以和哪些指标组合。LLM 面向语义层生成查询，而不是面向物理表。</p>
+<table>
+<tr><th style="width:180px">产品 / 方案</th><th>定位</th></tr>
+<tr><td>dbt Semantic Layer</td><td>基于 MetricFlow，在 dbt 模型之上定义指标与维度，通过统一 API 供 BI 和 AI 消费。生态最广。</td></tr>
+<tr><td>Cube</td><td>独立的语义层引擎，数据建模 + 缓存 + 多协议访问（SQL / REST / GraphQL / MDX），常被用作 AI 查询的中间层。</td></tr>
+<tr><td>AtScale</td><td>面向企业 BI 的语义层，强调多维模型与查询下推，较早提出「语义层是 AI 的必需品」。</td></tr>
+<tr><td>Databricks / Snowflake<br>语义视图与指标层</td><td>云数仓厂商正把语义定义内建进平台，目标就是给自家 AI 助手提供可靠的业务语义。</td></tr>
+<tr><td>Palantir Foundry<br>Ontology</td><td>把语义层做成了完整的「数字孪生 + 行动系统」，下面单独讲。</td></tr>
+</table>
+
+<div class="note">
+<b>语义层 ≈ 面向分析场景的轻量本体。</b>它没有 OWL 那套形式化推理，但它做对了本体最核心的一件事：<b>把业务概念的定义从人的脑子里搬到机器可读的地方</b>。<br>
+如果你的客户说的「数据本体」其实指的是「统一指标口径、让 AI 别再瞎猜字段含义」，那么<b>语义层就是最快见效的切入点</b>，不需要一上来就做 RDF/OWL。
+</div>
+
+<h3>Palantir 式本体：Objects / Links / Actions / Functions</h3>
+<p>Palantir 的 Ontology 是当下企业界影响最大的「本体」实践，但它和学术本体差别很大，值得单独理解。它由四类要素组成：</p>
+<div class="grid g4">
+  <div class="card" style="margin:0"><h4 style="margin:0 0 6px">Objects 对象</h4><p style="margin:0;font-size:13px">业务实体：设备、订单、患者、航班。背后映射到底层数据源，但对使用者呈现为统一的业务对象。</p></div>
+  <div class="card" style="margin:0"><h4 style="margin:0 0 6px">Links 关系</h4><p style="margin:0;font-size:13px">对象之间的连接：设备 → 所属产线 → 所属工厂。构成可遍历的业务图。</p></div>
+  <div class="card" style="margin:0"><h4 style="margin:0 0 6px">Actions 动作</h4><p style="margin:0;font-size:13px"><b>关键差异点。</b>本体不只描述状态，还定义「允许做什么」：审批、调度、下单，并<b>写回源系统</b>。</p></div>
+  <div class="card" style="margin:0"><h4 style="margin:0 0 6px">Functions 函数</h4><p style="margin:0;font-size:13px">挂在本体上的计算与模型：风险评分、需求预测。让 AI 调用时拿到的是业务语义，不是裸模型。</p></div>
+</div>
+<div class="note g">
+<b>为什么 Actions 这么重要？</b>因为 Agent 时代，AI 不只要「知道」，还要「做」。<br>
+一个只有 Objects 和 Links 的本体，能让 Agent 回答问题；<b>加上 Actions，Agent 才能执行业务操作，而且是在本体定义的权限、校验、审计约束之内执行</b>——这比让 Agent 直接调用一堆裸 API 安全得多。<br><br>
+用你熟悉的话说：<b>Actions 就是把「存储过程 + 权限模型 + 审批流」也纳入了本体的管辖范围。</b>本体从「数据的说明书」升级成了「企业的操作系统接口」。
+</div>
+
+<h3>Agent 时代，本体的三个新身份</h3>
+<div class="grid g3">
+  <div class="card" style="margin:0"><h4 style="margin-top:0">① 世界模型</h4><p style="font-size:13.5px;margin:0">Agent 需要知道「这个企业里存在哪些东西、它们怎么关联」。本体就是这张地图，避免 Agent 在无边界的空间里乱撞。</p></div>
+  <div class="card" style="margin:0"><h4 style="margin-top:0">② 工具与动作的类型系统</h4><p style="font-size:13.5px;margin:0">工具的输入输出用本体的类来声明，Agent 就能推断「这个工具的输出能喂给哪个工具」，而不是靠字符串匹配。</p></div>
+  <div class="card" style="margin:0"><h4 style="margin-top:0">③ 长期记忆的组织结构</h4><p style="font-size:13.5px;margin:0">把记忆存成本体约束下的三元组（而不是一堆对话切片），Agent 才能做记忆的更新、失效与冲突检测。</p></div>
+</div>
+<p style="margin-top:14px">与此同时，MCP（Model Context Protocol）这类标准正在统一「上下文和工具如何供给给模型」这一层。<b>MCP 解决的是管道问题，本体解决的是内容语义问题——两者是互补的，不是替代关系。</b>管道再标准，如果送过去的还是一堆没有语义的表名和字段名，模型依然只能猜。</p>
+</section>
+
+<section id="s14">
+<p class="kicker">14</p>
+<h2>行业本体案例库</h2>
+<p class="sub">不要从零造本体。绝大多数行业已经有了成熟的公共本体，复用它们能省下几年时间，还自带外部互通能力。</p>
+
+<div class="tabs" id="caseTabs"></div>
+<div id="casePanes"></div>
+</section>
+
+<section id="s15">
+<p class="kicker">15</p>
+<h2>怎么建：七步法与能力问题</h2>
+<p class="sub">本体工程有成熟方法论。最经典的是斯坦福 Noy &amp; McGuinness 的《Ontology Development 101》七步法，至今仍是入门标准。</p>
+
+<div class="gp">
+  <div class="head"><span>七步法 · 点击每一步查看做法与常见错误</span><span id="stepName" style="color:var(--accent)"></span></div>
+  <div class="body" style="padding:16px 20px">
+    <div class="btnrow" id="stepBtns" style="margin:0 0 14px"></div>
+    <div id="stepBox"></div>
+  </div>
+</div>
+
+<h3>能力问题（Competency Questions）：最实用的一个技巧</h3>
+<p>如果只让你从本体工程里学一样东西，就学这个。<b>能力问题是一组「本体建好之后必须能回答」的具体业务问题</b>，它们在建模开始前就要写下来，作为验收标准。</p>
+<div class="card">
+<h4 style="margin-top:0">制造业供应链本体的能力问题示例</h4>
+<ul style="margin:0">
+<li>某个零件最终装配进了哪些在售车型？（→ 需要 <code>partOf</code> 传递性 + <code>Platform</code> / <code>Model</code> 类）</li>
+<li>某供应商断供，未来 30 天内哪些订单会受影响？（→ 需要 <code>supplies</code> + 订单-零件关系 + 时间维度）</li>
+<li>同一个零件有几家合格供应商？哪些是单一来源？（→ 需要供应商资质状态 + 基数统计）</li>
+<li>某个质量缺陷批次流向了哪些客户？（→ 需要批次实体 + 发货关系，而不只是零件型号）</li>
+<li>哪些供应商同时也是我们的客户？（→ 需要角色建模，不能把 Supplier/Customer 建成互斥类）</li>
+</ul>
+</div>
+<div class="note g">
+<b>能力问题的三个作用：</b><br>
+① <b>划定边界</b>——回答不了的问题不在范围内，防止本体无限膨胀（这是本体项目最常见的死法）；<br>
+② <b>驱动设计</b>——每个问题倒推出需要哪些类和关系，避免闭门造车建一堆没人用的概念；<br>
+③ <b>作为验收测试</b>——把能力问题写成 SPARQL 查询，就是本体的单元测试，可以进 CI。<br><br>
+<b>做法：让业务方一口气写 20–50 个真实问题，按频率和价值排序，先满足前 10 个。</b>
+</div>
+
+<h3>三种建设策略，怎么选</h3>
+<div class="grid g3">
+<div class="card" style="margin:0"><h4 style="margin-top:0">自顶向下 Top-down</h4><p style="font-size:13.5px;margin:0 0 8px">先定最抽象的上层概念，再逐层细化。</p><p style="font-size:12.5px;margin:0;color:var(--ink3)"><b>优点</b>：结构清晰一致。<br><b>风险</b>：容易脱离实际数据，建出漂亮但没人用的本体。<br><b>适合</b>：有成熟行业标准可参照时。</p></div>
+<div class="card" style="margin:0"><h4 style="margin-top:0">自底向上 Bottom-up</h4><p style="font-size:13.5px;margin:0 0 8px">从现有数据源的字段和取值出发，逐步归纳抽象。</p><p style="font-size:12.5px;margin:0;color:var(--ink3)"><b>优点</b>：贴近现实，能立刻映射数据。<br><b>风险</b>：容易把源系统的历史包袱固化成本体。<br><b>适合</b>：数据源少、需要快速见效。</p></div>
+<div class="card" style="margin:0"><h4 style="margin-top:0">中间开花 Middle-out ★</h4><p style="font-size:13.5px;margin:0 0 8px">从业务最关心的核心概念（订单、客户、设备）切入，同时向上抽象、向下落数据。</p><p style="font-size:12.5px;margin:0;color:var(--ink3)"><b>这是实践中最推荐的策略。</b>核心概念既有业务共识，又有真实数据支撑，两端都能校验。</p></div>
+</div>
+
+<h3>治理：本体是活的资产，不是一次性交付物</h3>
+<p>本体项目失败最常见的原因不是技术，是<b>没人负责</b>。必须明确：</p>
+<ul>
+<li><b>Ontology Steward / 本体管家</b>：通常 1–2 人，对本体的一致性和演化负最终责任。<b>必须懂业务，不能只是技术人员。</b></li>
+<li><b>领域专家评审机制</b>：每个领域模块由对应业务方签字确认，本体才有权威性。</li>
+<li><b>版本管理</b>：本体文件进 Git，用语义化版本号，变更走 PR 评审。破坏性变更（删类、改 IRI）必须走弃用（<code>owl:deprecated</code>）流程而不是直接删。</li>
+<li><b>持续验证</b>：把能力问题写成 SPARQL 测试用例，本体或数据变更时自动跑，进 CI/CD。</li>
+</ul>
+</section>
+
+<section id="s16">
+<p class="kicker">16</p>
+<h2>十大陷阱：别人踩过的坑</h2>
+<p class="sub">这些不是理论问题，全都是让项目延期或作废的真实死法。</p>
+<div id="trapList"></div>
+</section>
+
+<section id="s17">
+<p class="kicker">17</p>
+<h2>工具生态与上手路线</h2>
+
+<h3>工具全景</h3>
+<table>
+<tr><th style="width:150px">工具</th><th style="width:110px">类别</th><th>说明</th></tr>
+<tr><td>Protégé</td><td>本体编辑器</td><td>斯坦福出品，免费开源，事实上的行业标准。内置 HermiT / Pellet 推理机，可以点一下就看到推理结果。<b>学习本体必装的第一个软件。</b></td></tr>
+<tr><td>WebVOWL</td><td>可视化</td><td>把 OWL 本体渲染成交互式图，用来给业务方讲解本体极其有效。</td></tr>
+<tr><td>LinkML</td><td>建模框架</td><td>用 YAML 写模型，一键生成 JSON Schema / SHACL / OWL / Python 类。<b>对开发者最友好的现代入口</b>，生命科学领域用得很多。</td></tr>
+<tr><td>Apache Jena<br>RDFLib</td><td>开发库</td><td>Java / Python 的 RDF 处理库，本地做实验、写脚本、跑推理都靠它们。</td></tr>
+<tr><td>GraphDB<br>Stardog</td><td>RDF 图数据库</td><td>企业级三元组库，内建 OWL 推理与 SHACL 校验。Stardog 还提供虚拟图（不搬数据，直接映射关系库）。</td></tr>
+<tr><td>Amazon Neptune</td><td>云图数据库</td><td>同时支持 RDF/SPARQL 与 LPG/Gremlin/openCypher，云上省运维。</td></tr>
+<tr><td>Neo4j + n10s</td><td>属性图</td><td>LPG 阵营的事实标准，neosemantics 插件可导入 RDF/OWL，做「本体设计 + LPG 落地」的桥接。</td></tr>
+<tr><td>TopBraid<br>PoolParty</td><td>商业本体平台</td><td>面向大型组织的本体/词表治理平台，带工作流、权限、发布管理。</td></tr>
+<tr><td>Palantir Foundry</td><td>一体化平台</td><td>本体 + 数据集成 + 应用 + AI 一体，价格高但落地快，很多大型企业的参照系。</td></tr>
+<tr><td>R2RML / RML<br>Ontop</td><td>映射</td><td>把关系库、CSV、JSON 映射成 RDF。Ontop 支持虚拟化（OBDA）——<b>数据不动，只在查询时翻译，这是存量系统改造成本最低的路径。</b></td></tr>
+</table>
+
+<h3>给你的 30 天上手路线</h3>
+<div class="gp"><div class="body" style="padding:18px 22px">
+<div class="step"><div class="num">1</div><div><b>第 1 周 · 建立手感</b><br><span style="font-size:13.5px;color:var(--ink2)">装 Protégé，跟着官方 Pizza 教程走一遍（经典入门材料）。重点体会一件事：定义好类和约束后，点「运行推理机」，看它把匿名披萨自动归类到正确的类别下。<b>这一刻的「啊哈」体验，胜过读十篇文章。</b></span></div></div>
+<div class="step"><div class="num">2</div><div><b>第 2 周 · 读懂标准</b><br><span style="font-size:13.5px;color:var(--ink2)">通读 W3C 的 RDF 1.1 Primer 和 OWL 2 Primer（都不长）。然后在 Protégé 里把本页第 4 节那段制造业 Turtle 敲一遍，跑一次推理，验证第 6 节演示的每条规则。</span></div></div>
+<div class="step"><div class="num">3</div><div><b>第 3 周 · 对着真实业务建模</b><br><span style="font-size:13.5px;color:var(--ink2)">选你最熟的一个业务域（订单、设备、客户任选其一），先写 20 个能力问题，再用中间开花策略建一个 20–30 个类的小本体。<b>关键动作：找一个业务同事讲给他听，他听不懂的地方就是建模有问题的地方。</b></span></div></div>
+<div class="step"><div class="num">4</div><div><b>第 4 周 · 接真实数据 + 接 LLM</b><br><span style="font-size:13.5px;color:var(--ink2)">用 RDFLib + 一段 Python，把某张真实表按你的本体转成三元组，装进 GraphDB 或 Neo4j。然后写一个最小 Demo：用 LLM 把自然语言问题转成 SPARQL，跑出结果。<b>跑通这一条链路，你就完全理解客户在说什么了。</b></span></div></div>
+</div></div>
+
+<div class="note w">
+<b>最后一个务实建议：不要立项做「企业级本体」。</b><br>
+本体项目最高效的启动方式是<b>挂靠在一个具体的、有人痛的业务问题上</b>——比如「供应链断供影响分析」或「设备故障知识问答」。做一个 30 个类以内的小本体，两个月内出可见成果，再逐步扩展。<br>
+那些一上来就要「统一全公司数据语义」的本体项目，几乎全部死在第一年。
+</div>
+</section>
+
+<section id="s18">
+<p class="kicker">18</p>
+<h2>术语速查</h2>
+<p class="sub">和客户开会时不至于卡壳。</p>
+<div id="glossary"></div>
+<hr>
+<p style="font-size:13px;color:var(--ink3)">本页所有演示均为纯前端实现，图谱、推理与 SPARQL 匹配都是在浏览器中真实执行的小引擎，可离线使用。<br>建议配合 Protégé 实际动手，理解会深一个量级。</p>
+</section>
+
+
+
+<section id="s19">
+<p class="kicker">19</p>
+<h2>权威来源与可信度说明</h2>
+<p class="sub">本材料中的定义、数据与标准均来自以下一手来源。引用时请留意分级：A 级为同行评议或规范原文，B 级为厂商技术报告（方法透明但利益相关），C 级为市场材料（可用于说服但须标注来源性质）。</p>
+<div class="card">
+<h4 style="margin-top:0">一、W3C 标准（规范原文）</h4>
+<ul style="margin:0">
+<li><b>RDF 1.1 / RDF Schema 1.1</b>（Rec 2014-02-25）——三元组数据模型与轻量 Schema 层。</li>
+<li><b>OWL 2</b>（Rec 2009，2nd Ed. 2012）——描述逻辑公理层；EL/QL/RL 三个 Profile 详见 <code>w3.org/TR/owl2-profiles/</code>。</li>
+<li><b>SHACL</b>（Rec 2017-07-20）——闭世界数据校验语言；与 OWL 的分工见 Knublauch《SHACL and OWL Compared》。</li>
+<li><b>SPARQL 1.1</b>（Rec 2013-03-21）——图查询语言，含属性路径与联邦查询。</li>
+<li><b>SKOS</b> / <b>PROV-O</b> / <b>DCAT</b>——词表、溯源、数据目录互操作。</li>
+</ul>
+</div>
+<div class="card" style="margin-top:14px">
+<h4 style="margin-top:0">二、关键学术文献（A 级）</h4>
+<ul style="margin:0">
+<li>Gruber T.R. (1993). <i>A Translation Approach to Portable Ontology Specifications</i>. Knowledge Acquisition 5(2).</li>
+<li>Studer, Benjamins &amp; Fensel (1998). <i>Knowledge Engineering: Principles and Methods</i>. DKE 25(1–2)——四关键词定义定稿。</li>
+<li>Sequeda, Allemang &amp; Jacob（data.world）, arXiv:2311.07509——本体 KG vs 裸 SQL schema 查询准确率 54.2% vs 16.7%。</li>
+<li>Han et al., arXiv:2502.11371——GraphRAG 与向量 RAG 的系统评测（平衡视角）。</li>
+<li>OntoMetric, arXiv:2512.01289——本体约束抽取 vs 自由抽取的量化对比。</li>
+<li>Motik, Horrocks &amp; Sattler (2009). <i>Bridging the gap between OWL and relational databases</i>. JWS 7(2)——OWA/CWA 之别的权威依据。</li>
+</ul>
+</div>
+<div class="card" style="margin-top:14px">
+<h4 style="margin-top:0">三、行业本体与工具</h4>
+<ul style="margin:0">
+<li>金融：<b>FIBO</b>（EDM Council / OMG）；医疗：<b>SNOMED CT</b>、<b>LOINC</b>、<b>HL7 FHIR</b>；制造：<b>ISA-95</b>、<b>IOF</b>、<b>AAS</b>；电网：<b>IEC 61970 CIM</b>；零售：<b>GS1</b>；通用：<b>schema.org</b>、<b>Gist</b>、<b>BFO</b>、<b>Wikidata</b>。</li>
+<li>编辑：<b>Protégé</b>（Stanford）；存储/推理：<b>GraphDB / Stardog / Jena / Neptune</b>；桥梁工具：<b>LinkML</b>（YAML 写 schema，对数据建模背景最友好）、<b>R2RML / RML</b>（关系库映射）；体检：<b>OOPS!</b>（29 项本体陷阱扫描）。</li>
+</ul>
+</div>
+<div class="note">
+<b>给客户的落地三句话：</b>① 不要「本体化一切」——局部事实问答走向量 RAG，多跳/全局/聚合/审计才走图；② 第一版从已有资产起手（语义层指标、数据目录、旧 MDM、业务术语表），AI 提议、专家审批；③ 投资回报集中在两处——抽取质量（3–10% vs 65–90%）与查询正确性（16.7% vs 54.2%），用这两组一手数据说服，比任何厂商「提升 35%」都稳。
+</div>
+</section>
+
+</main>
+</div>
+
+<script>
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const NS='http://www.w3.org/2000/svg';
+function E(t,a,p){const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e;}
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+/* ---------- 主题 / 进度 / 目录 ---------- */
+$('#themeBtn').onclick=()=>{const h=document.documentElement;h.dataset.theme=h.dataset.theme==='dark'?'light':'dark';};
+const secs=$$('section'),links=$$('#toc a');
+addEventListener('scroll',()=>{
+  const t=scrollY,h=document.body.scrollHeight-innerHeight;
+  $('#bar').style.width=(t/h*100)+'%';
+  let cur=secs[0];for(const s of secs){if(s.getBoundingClientRect().top<160)cur=s;}
+  links.forEach(a=>a.classList.toggle('on',a.getAttribute('href')==='#'+cur.id));
+},{passive:true});
+
+/* ---------- 通用图渲染 ---------- */
+const PAL={cls:['var(--accentSoft)','var(--accent)','var(--accent)'],ind:['var(--tealSoft)','var(--teal)','var(--teal)'],
+ lit:['var(--surface2)','var(--line2)','var(--ink2)'],neo:['var(--coralSoft)','var(--coral)','var(--coral)'],
+ bad:['var(--redSoft)','var(--red)','var(--red)'],hit:['var(--amberSoft)','var(--amber)','var(--amber)']};
+function nodeW(l){let w=0;for(const c of l)w+=(c.charCodeAt(0)>255?13:7.4);return Math.max(64,w+22);}
+function drawGraph(svg,nodes,links,opt={}){
+  svg.innerHTML='';
+  const defs=E('defs',{},svg);
+  ['var(--line2)','var(--coral)','var(--amber)','var(--red)'].forEach((c,i)=>{
+    const m=E('marker',{id:'ar'+svg.id+i,viewBox:'0 0 10 10',refX:9,refY:5,markerWidth:5,markerHeight:5,orient:'auto-start-reverse'},defs);
+    E('path',{d:'M1 1L9 5L1 9',fill:'none',stroke:c,'stroke-width':1.8,'stroke-linecap':'round','stroke-linejoin':'round'},m);
+  });
+  const idx={};nodes.forEach(n=>idx[n.id]=n);
+  const eg=E('g',{},svg),ng=E('g',{},svg);
+  links.forEach(l=>{
+    const a=idx[l.s],b=idx[l.t];if(!a||!b)return;
+    const aw=nodeW(a.label)/2,bw=nodeW(b.label)/2;
+    let dx=b.x-a.x,dy=b.y-a.y;const d=Math.hypot(dx,dy)||1;dx/=d;dy/=d;
+    const cut=(n,w,ux,uy)=>{const hh=15;const tx=Math.abs(ux)>1e-6?w/Math.abs(ux):1e9,ty=Math.abs(uy)>1e-6?hh/Math.abs(uy):1e9;const t=Math.min(tx,ty);return[n.x+ux*t,n.y+uy*t];};
+    const [x1,y1]=cut(a,aw,dx,dy),[x2,y2]=cut(b,bw,-dx,-dy);
+    const kind=l.k||'base';
+    const col=kind==='neo'?'var(--coral)':kind==='hit'?'var(--amber)':kind==='bad'?'var(--red)':'var(--line2)';
+    const mi=kind==='neo'?1:kind==='hit'?2:kind==='bad'?3:0;
+    const off=l.curve||0;
+    const mx=(x1+x2)/2-dy*off,my=(y1+y2)/2+dx*off;
+    const p=E('path',{d:`M${x1} ${y1} Q ${mx} ${my} ${x2} ${y2}`,fill:'none',stroke:col,
+      'stroke-width':kind==='base'?1.3:2,'marker-end':`url(#ar${svg.id}${mi})`},eg);
+    if(kind==='neo')p.setAttribute('class','edge-new');
+    if(l.label){
+      const lx=(x1+x2)/2-dy*off*0.55,ly=(y1+y2)/2+dx*off*0.55;
+      const w=l.label.length*6.6+8;
+      E('rect',{x:lx-w/2,y:ly-8,width:w,height:16,rx:4,fill:'var(--bg)',opacity:.92},eg);
+      const t=E('text',{x:lx,y:ly+4,'text-anchor':'middle','font-size':10.5,fill:col,'font-family':'inherit'},eg);
+      t.textContent=l.label;
+    }
+  });
+  nodes.forEach(n=>{
+    const c=PAL[n.t||'ind'],w=nodeW(n.label);
+    const g=E('g',{},ng);
+    E('rect',{x:n.x-w/2,y:n.y-15,width:w,height:30,rx:8,fill:c[0],stroke:c[1],'stroke-width':n.hot?2:1},g);
+    const t=E('text',{x:n.x,y:n.y+4.5,'text-anchor':'middle','font-size':12,fill:c[2],'font-family':'inherit'},g);
+    t.textContent=n.label;
+    if(n.badge){
+      const bw=n.badge.length*11+10;
+      E('rect',{x:n.x+w/2-4,y:n.y-25,width:bw,height:16,rx:8,fill:'var(--coral)'},g);
+      const b=E('text',{x:n.x+w/2-4+bw/2,y:n.y-13.5,'text-anchor':'middle','font-size':10,fill:'#fff','font-family':'inherit'},g);
+      b.textContent=n.badge;
+    }
+    if(n.hot)g.setAttribute('class','fade');
+  });
+}
+function force(nodes,links,w,h,it=320){
+  nodes.forEach((n,i)=>{if(n.x==null){const a=i/nodes.length*6.283;n.x=w/2+Math.cos(a)*w*.26;n.y=h/2+Math.sin(a)*h*.3;}n.vx=0;n.vy=0;});
+  const idx={};nodes.forEach(n=>idx[n.id]=n);
+  for(let k=0;k<it;k++){const damp=1-k/it;
+    for(let i=0;i<nodes.length;i++)for(let j=i+1;j<nodes.length;j++){
+      const a=nodes[i],b=nodes[j];let dx=a.x-b.x,dy=a.y-b.y;let d2=dx*dx+dy*dy||1;
+      if(d2<70000){const d=Math.sqrt(d2),f=11000/d2;a.vx+=dx/d*f;a.vy+=dy/d*f;b.vx-=dx/d*f;b.vy-=dy/d*f;}}
+    links.forEach(l=>{const a=idx[l.s],b=idx[l.t];if(!a||!b)return;
+      let dx=b.x-a.x,dy=b.y-a.y;const d=Math.hypot(dx,dy)||1,f=(d-155)*.055;
+      a.vx+=dx/d*f;a.vy+=dy/d*f;b.vx-=dx/d*f;b.vy-=dy/d*f;});
+    nodes.forEach(n=>{n.vx+=(w/2-n.x)*.014;n.vy+=(h/2-n.y)*.02;
+      n.x+=Math.max(-16,Math.min(16,n.vx*damp));n.y+=Math.max(-16,Math.min(16,n.vy*damp));
+      n.vx*=.8;n.vy*=.8;n.x=Math.max(70,Math.min(w-70,n.x));n.y=Math.max(34,Math.min(h-34,n.y));});}
+}
+
+/* ---------- 02 三种视角 ---------- */
+const VIEWS=[
+{html:`<div style="font-size:13px" class="mono">
+<div style="color:var(--ink3);margin-bottom:6px">t_supplier</div>
+<table style="margin:0 0 16px"><tr><th>supplier_id</th><th>supplier_name</th><th>credit_code</th></tr>
+<tr><td>S001</td><td>宏远精密机械有限公司</td><td>9133...MA2</td></tr></table>
+<div style="color:var(--ink3);margin-bottom:6px">t_customer</div>
+<table style="margin:0 0 16px"><tr><th>customer_id</th><th>cust_name</th><th>tax_no</th></tr>
+<tr><td>C20713</td><td>宏远精密</td><td>9133...MA2</td></tr></table>
+<div style="color:var(--ink3);margin-bottom:6px">t_bom</div>
+<table style="margin:0"><tr><th>parent_id</th><th>child_id</th><th>qty</th></tr>
+<tr><td>P-KNUCKLE</td><td>P-BEARING-A</td><td>2</td></tr>
+<tr><td>P-FSUSP</td><td>P-KNUCKLE</td><td>1</td></tr></table></div>`,
+ note:`<div class="note d"><b>问题在哪：</b>同一家「宏远精密」在两张表里是两条记录、两个主键、两个略有差异的名称，只有信用代码能对上——而这个字段一个叫 <code>credit_code</code>、一个叫 <code>tax_no</code>。<br>数据库不知道它们是同一家公司；<b>更要命的是，任何读这个库的 AI 也不知道。</b>BOM 表能存父子关系，但「轴承A 最终装在哪个整车平台上」需要写递归 CTE，深度未知。</div>`},
+{html:'',note:`<div class="note w"><b>进步与局限：</b>ER 图终于把实体和关系画出来了，比裸表清晰得多。但它仍然是<b>为某一个系统服务</b>的：<br>① 「供应商」和「客户」是两个独立实体，同一家公司的双重身份表达不了；<br>② 关系线上的语义（一对多、可选性）人能看懂，<b>但机器无法据此推理</b>；<br>③ 这张图画完就躺在 Visio 里了，运行时的数据库并不知道它的存在。</div>`},
+{html:'',note:`<div class="note g"><b>本体做了三件 ER 做不到的事：</b><br>① <b>身份统一</b>：「宏远精密」是一个法人实体，供应商/客户只是它扮演的角色，一个个体可同时属于多个类；<br>② <b>关系带语义</b>：<code>:partOf</code> 被声明为传递性属性，机器自动知道「轴承A 属于底盘平台」，无需递归 SQL；<br>③ <b>这张图本身就是数据</b>：它以 RDF/OWL 形式存在运行时环境里，推理机和 LLM 都能直接读取和使用。</div>`}];
+VIEWS[1].html=`<svg viewBox="0 0 820 290" style="width:100%;height:auto">
+<defs><marker id="erA" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M1 1L9 5L1 9" fill="none" stroke="var(--line2)" stroke-width="1.6"/></marker></defs>
+${[['供应商 SUPPLIER',80,30],['客户 CUSTOMER',560,30],['零件 PART',80,150],['BOM 结构',330,150],['车型 MODEL',560,150]].map(([l,x,y])=>
+`<rect x="${x}" y="${y}" width="180" height="52" rx="6" fill="var(--surface2)" stroke="var(--line2)"/><text x="${x+90}" y="${y+24}" text-anchor="middle" font-size="13" fill="var(--ink)" font-family="inherit">${l.split(' ')[0]}</text><text x="${x+90}" y="${y+40}" text-anchor="middle" font-size="10.5" fill="var(--ink3)" font-family="inherit">${l.split(' ')[1]||''}</text>`).join('')}
+<path d="M170 82 L170 150" stroke="var(--line2)" stroke-width="1.3" fill="none" marker-end="url(#erA)"/><text x="178" y="120" font-size="11" fill="var(--ink3)" font-family="inherit">supplies (1:N)</text>
+<path d="M260 176 L330 176" stroke="var(--line2)" stroke-width="1.3" fill="none" marker-end="url(#erA)"/>
+<path d="M510 176 L560 176" stroke="var(--line2)" stroke-width="1.3" fill="none" marker-end="url(#erA)"/>
+<path d="M650 82 L650 150" stroke="var(--line2)" stroke-width="1.3" fill="none" marker-end="url(#erA)"/><text x="658" y="120" font-size="11" fill="var(--ink3)" font-family="inherit">orders (1:N)</text>
+<text x="330" y="252" font-size="12" fill="var(--red)" font-family="inherit">同一家「宏远精密」被迫拆成 SUPPLIER 与 CUSTOMER 两条互不相识的记录</text>
+<path d="M170 240 L320 240" stroke="var(--red)" stroke-width="1" stroke-dasharray="4 4" fill="none"/>
+<path d="M650 240 L560 240" stroke="var(--red)" stroke-width="1" stroke-dasharray="4 4" fill="none"/>
+</svg>`;
+VIEWS[2].html=`<svg viewBox="0 0 820 300" id="ontoV" style="width:100%;height:auto"></svg>`;
+const vb=$('#viewBox');
+function setView(i){
+  vb.innerHTML=VIEWS[i].html;$('#viewNote').innerHTML=VIEWS[i].note;
+  $$('#viewBtns button').forEach((b,j)=>b.classList.toggle('on',i===j));
+  if(i===2){
+    const N=[{id:'LE',label:'法人实体 LegalEntity',t:'cls',x:410,y:38},
+      {id:'SUP',label:'供应商角色',t:'cls',x:210,y:110},{id:'CUS',label:'客户角色',t:'cls',x:610,y:110},
+      {id:'HY',label:'宏远精密',t:'ind',x:410,y:180,hot:1},
+      {id:'BA',label:'轴承A',t:'ind',x:130,y:250},{id:'SK',label:'转向节总成',t:'ind',x:330,y:250},
+      {id:'FS',label:'前悬架',t:'ind',x:520,y:250},{id:'CH',label:'底盘平台X5',t:'ind',x:700,y:250}];
+    const L=[{s:'SUP',t:'LE',label:'subClassOf'},{s:'CUS',t:'LE',label:'subClassOf'},
+      {s:'HY',t:'SUP',label:'a'},{s:'HY',t:'CUS',label:'a'},{s:'HY',t:'BA',label:'supplies',curve:26},
+      {s:'BA',t:'SK',label:'partOf'},{s:'SK',t:'FS',label:'partOf'},{s:'FS',t:'CH',label:'partOf'}];
+    drawGraph($('#ontoV'),N,L);$('#ontoV').setAttribute('viewBox','0 0 820 300');
+  }
+}
+$$('#viewBtns button').forEach(b=>b.onclick=()=>setView(+b.dataset.v));
+setView(0);
+
+/* ---------- 03 语义阶梯 ---------- */
+const LADDER=[
+ {n:'术语表 Glossary',d:'一堆词，配人话解释。',ex:'「MTBF = 平均无故障时间」写在一个 Excel 里。',add:'统一了叫法的<b>出处</b>，仅此而已。',mach:'机器只看到字符串，无法计算。',std:'Excel / Confluence 页面'},
+ {n:'受控词表 Controlled Vocabulary',d:'规定某个字段只能从固定列表里选，不许自由发挥。',ex:'设备状态只能是「运行 / 停机 / 检修 / 报废」四选一。',add:'消除了<b>同义乱写</b>：不会再有「维修中」「检修中」「保养」三种写法。',mach:'可做精确匹配与统计。',std:'数据字典 / 枚举 / SKOS ConceptScheme'},
+ {n:'分类法 Taxonomy',d:'词与词之间有了父子层级（is-a / broader）。',ex:'深沟球轴承 → 轴承 → 机械零件 → 零件。',add:'有了<b>继承与上卷</b>：查「机械零件」能自动包含所有子类。',mach:'可沿层级做聚合与泛化。',std:'schema.org 层级 / 产品分类目录 / GPC'},
+ {n:'叙词表 Thesaurus',d:'在层级之外，补充同义词、相关词、多语言标签。',ex:'「轴承」的英文 bearing、俗称「培林」、相关词「润滑脂」。',add:'能做<b>同义归一与跨语言检索</b>——搜「培林」也能命中。',mach:'检索召回率大幅提升，是搜索系统的标配。',std:'W3C SKOS（broader / narrower / related / altLabel）'},
+ {n:'概念模型 / ER',d:'出现了多种命名关系和属性，不只是层级。',ex:'供应商 —供应→ 零件；零件 —装配于→ 总成。',add:'表达了<b>丰富的结构</b>，但关系的含义仍靠人读文档。',mach:'机器知道有连线，不知道连线意味着什么。',std:'UML / IDEF1X / ER 图'},
+ {n:'本体 Ontology',d:'为概念和关系加上形式化公理、约束与特性。',ex:'声明 partOf 是传递性的；声明「供应商至少供应一种零件」；声明自然人与法人互斥。',add:'机器<b>能推理、能校验、能发现矛盾</b>。这是质变点。',mach:'推理机可自动生成新事实、检测数据冲突。',std:'RDFS / OWL 2 / SHACL'},
+ {n:'知识图谱 Knowledge Graph',d:'本体（模具）＋ 海量真实实例（铸件）＋ 溯源、时效、置信度。',ex:'三千万个实体、两亿条关系，每条都标注了来源系统与生效时间。',add:'能回答<b>具体的事实性问题</b>，并说清答案的来源。',mach:'成为 AI 可查询、可解释的事实底座。',std:'企业 KG / Wikidata / Google KG'}];
+const lad=$('#ladder');
+function renderLad(){
+  const i=+lad.value,L=LADDER[i];
+  $('#ladderName').textContent='第 '+(i+1)+' 级 · '+L.n;
+  $('#ladderBox').innerHTML=`<div class="fade">
+   <div style="display:flex;gap:6px;margin-bottom:14px">${LADDER.map((_,j)=>`<div style="flex:1;height:5px;border-radius:3px;background:${j<=i?'var(--accent)':'var(--surface3)'}"></div>`).join('')}</div>
+   <h4 style="margin:0 0 6px;font-size:16px">${L.n}</h4>
+   <p style="margin:0 0 14px">${L.d}</p>
+   <div class="kv"><b>举例</b><span>${L.ex}</span></div>
+   <div class="kv"><b>比上一级多了</b><span>${L.add}</span></div>
+   <div class="kv"><b>机器能做什么</b><span>${L.mach}</span></div>
+   <div class="kv" style="border:none"><b>典型标准</b><span>${L.std}</span></div></div>`;
+}
+lad.oninput=renderLad;renderLad();
+
+/* ---------- 04 五大构件 ---------- */
+const TTL=[
+['pre','@prefix :     <https://acme.cn/onto#> .'],
+['pre','@prefix owl:  <http://www.w3.org/2002/07/owl#> .'],
+['pre','@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .'],
+['pre','@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .'],
+['pre',''],
+['cls','# ① 类 Class —— 领域中的概念范畴'],
+['cls',':LegalEntity  a owl:Class .'],
+['cls',':Supplier     a owl:Class ; rdfs:subClassOf :LegalEntity .'],
+['cls',':Customer     a owl:Class ; rdfs:subClassOf :LegalEntity .'],
+['cls',':Part         a owl:Class .'],
+['cls',':Assembly     a owl:Class ; rdfs:subClassOf :Part .'],
+['cls',''],
+['op','# ② 对象属性 ObjectProperty —— 连接两个个体'],
+['op',':supplies  a owl:ObjectProperty ;'],
+['op','    rdfs:domain :Supplier ;'],
+['op','    rdfs:range  :Part ;'],
+['op','    owl:inverseOf :suppliedBy .'],
+['op',':partOf    a owl:ObjectProperty , owl:TransitiveProperty ;'],
+['op','    rdfs:domain :Part ; rdfs:range :Assembly .'],
+['op',''],
+['dp','# ③ 数据属性 DatatypeProperty —— 连接个体与字面量'],
+['dp',':legalName a owl:DatatypeProperty ;'],
+['dp','    rdfs:domain :LegalEntity ; rdfs:range xsd:string .'],
+['dp',':creditCode a owl:DatatypeProperty , owl:FunctionalProperty ,'],
+['dp','                owl:InverseFunctionalProperty ;'],
+['dp','    rdfs:domain :LegalEntity ; rdfs:range xsd:string .'],
+['dp',''],
+['ax','# ④ 公理 Axiom —— 机器据此推理与校验'],
+['ax',':Supplier rdfs:subClassOf ['],
+['ax','    a owl:Restriction ;'],
+['ax','    owl:onProperty :supplies ;'],
+['ax','    owl:someValuesFrom :Part ] .'],
+['ax',''],
+['ax',':NaturalPerson owl:disjointWith :LegalEntity .'],
+['ax',':SanctionedSupplier rdfs:subClassOf :Supplier .'],
+['ax',''],
+['ind','# ⑤ 个体 Individual —— 真实世界的具体对象'],
+['ind',':HongYuan a :Supplier , :Customer ;'],
+['ind','    :legalName  "宏远精密机械有限公司" ;'],
+['ind','    :creditCode "91330100MA2K7X8L3D" ;'],
+['ind','    :supplies   :BearingA .'],
+['ind',''],
+['ind',':BearingA a :Part ; :partOf :SteeringKnuckle .'],
+['ind',':SteeringKnuckle a :Assembly ; :partOf :FrontSuspension .']];
+const PDESC={
+ all:{t:'完整本体片段',b:'一份本体文件通常就长这样。它同时定义了<b>概念层</b>（类、属性、公理）和<b>实例层</b>（个体）——这两层可以放在同一个文件，也可以拆开：概念层由知识工程师治理，实例层由数据管道自动灌入。<br><br>注意最上面的 <code>@prefix</code>：本体里所有名字都是完整的 IRI（网址），<code>:Supplier</code> 只是 <code>https://acme.cn/onto#Supplier</code> 的缩写。<b>这就是全局唯一标识的来源</b>，也是两套本体能直接合并而不冲突的原因。'},
+ cls:{t:'① 类 Class',b:'类是<b>概念的范畴</b>，对应你熟悉的「实体类型」。<br><br>关键差别：<code>rdfs:subClassOf</code> 不只是文档上的注释，它是<b>可执行的语义</b>——推理机看到「宏远是 Supplier」「Supplier 是 LegalEntity 的子类」，会自动推出「宏远是 LegalEntity」，无需你写任何查询。<br><br>而且类可以多重继承：<code>:Assembly</code> 既可以是 <code>:Part</code> 的子类，也可以同时是 <code>:ManufacturedItem</code> 的子类。在关系库里这需要痛苦的表继承设计。'},
+ op:{t:'② 对象属性 ObjectProperty',b:'对象属性 = 带名字、带语义的外键。<br><br><code>rdfs:domain</code> 和 <code>rdfs:range</code> 声明了这个关系的两端应该是什么类型。<b>但要小心：在 OWL 里它们不是校验，是推理</b>——如果你写了 <code>:万信 :supplies :螺栓B</code>，而 <code>:supplies</code> 的 domain 是 <code>:Supplier</code>，推理机不会报错说「万信不是供应商」，它会<b>直接推断出万信就是供应商</b>。<br><br>这是 OWL 新手最大的困惑来源。要做真正的校验，用 SHACL。<br><br><code>owl:inverseOf</code> 让你只录一次数据，两个方向都能查。'},
+ dp:{t:'③ 数据属性 DatatypeProperty',b:'数据属性连接个体和字面量（字符串、数字、日期），对应普通字段。<br><br>这里的重点是 <code>:creditCode</code> 上挂的两个特性：<br>• <code>FunctionalProperty</code>：一家公司只能有一个信用代码 → 出现第二个不同的值，推理机<b>报数据冲突</b>。<br>• <code>InverseFunctionalProperty</code>：一个信用代码只能属于一家公司 → 如果 ERP 里的 S001 和 CRM 里的 C20713 信用代码相同，推理机<b>自动判定它们是同一个实体</b>并合并所有属性。<br><br><b>这两行代码替代了传统主数据管理里一整套实体匹配规则引擎。</b>'},
+ ax:{t:'④ 公理 Axiom',b:'公理是本体的灵魂，也是关系模型里<b>完全没有对应物</b>的部分。<br><br>那个方括号是一个匿名类（Restriction）：「所有 supplies 关系至少指向一个 Part 的东西」。声明 Supplier 是它的子类，就等于说「凡是供应商，必定至少供应一种零件」。<br><br><code>owl:disjointWith</code> 声明互斥：自然人不可能同时是法人。一旦数据里出现这种情况，推理机会立刻报<b>不一致（inconsistency）</b>——这是一种关系数据库给不了的、跨越多张表的全局一致性检查。<br><br>公理的价值在于：业务规则从代码里搬到了数据里，<b>业务专家可以直接维护，无需改程序</b>。'},
+ ind:{t:'⑤ 个体 Individual',b:'个体是真实世界的具体对象，对应一行记录。<br><br>注意 <code>:HongYuan a :Supplier , :Customer</code> 这一行——<b>一个个体同时属于两个类</b>。这在 ER 世界里做不到（一条记录只能在一张表里），在本体里却是最自然不过的写法。<br><br>还要注意：个体的 IRI 是 <code>:HongYuan</code>，不是 <code>S001</code> 也不是 <code>C20713</code>。<b>IRI 是跨系统的、稳定的、全局的身份</b>；源系统的主键降级为普通属性（<code>:erpId "S001"</code>）。这个转变是企业主数据治理的核心动作。'}};
+function hlLine(s){
+  s=esc(s);let cm='';const ci=s.indexOf(' #'),c0=s.startsWith('#');
+  if(c0)return '<span class="c">'+s+'</span>';
+  if(ci>=0){cm='<span class="c">'+s.slice(ci)+'</span>';s=s.slice(0,ci);}
+  s=s.replace(/"([^"]*)"/g,'<span class="s">"$1"</span>');
+  s=s.replace(/\b(owl|rdfs|xsd|rdf|sh):([A-Za-z]+)/g,'<span class="k">$1:$2</span>');
+  s=s.replace(/(^|[\s;,(\[])(:[A-Za-z][A-Za-z0-9_]*)/g,'$1<span class="u">$2</span>');
+  return s+cm;
+}
+function renderTTL(p){
+  $('#ttl').innerHTML=TTL.map(([k,t])=>{
+    const dim=(p!=='all'&&k!==p&&k!=='pre')?'opacity:.22':(p!=='all'&&k===p)?'background:var(--accentSoft);display:block;margin:0 -18px;padding:0 18px':'';
+    return `<span style="${dim}">${hlLine(t)||'&nbsp;'}</span>`;}).join('\n');
+  $('#partDesc').innerHTML=`<div class="fade"><h4 style="margin:0 0 10px">${PDESC[p].t}</h4><p style="margin:0;font-size:14px">${PDESC[p].b}</p></div>`;
+}
+$$('#partChips .chip').forEach(c=>c.onclick=()=>{
+  $$('#partChips .chip').forEach(x=>x.classList.remove('on'));c.classList.add('on');renderTTL(c.dataset.p);});
+renderTTL('all');
+
+/* ---------- 05 三元组实验室 ---------- */
+const SUBJ=[['宏远精密','ind'],['万信机电','ind'],['轴承A','ind'],['转向节总成','ind'],['前悬架','ind'],['底盘平台X5','ind'],['供应商','cls'],['零件','cls']];
+const PRED=['a (类型)','supplies 供应','partOf 属于','legalName 名称','riskLevel 风险等级','subClassOf 子类'];
+const OBJ=[['供应商','cls'],['零件','cls'],['轴承A','ind'],['转向节总成','ind'],['前悬架','ind'],['底盘平台X5','ind'],['"宏远精密机械有限公司"','lit'],['"高"','lit']];
+let tN=[],tL=[],tT=[];
+const tSvg=$('#tSvg');
+function fillSel(){
+  $('#tS').innerHTML=SUBJ.map(([v])=>`<option>${v}</option>`).join('');
+  $('#tP').innerHTML=PRED.map(v=>`<option>${v}</option>`).join('');
+  $('#tO').innerHTML=OBJ.map(([v])=>`<option>${v}</option>`).join('');
+}
+function typeOf(v){const f=[...SUBJ,...OBJ].find(x=>x[0]===v);return f?f[1]:'ind';}
+function addTriple(s,p,o,silent){
+  const pn=p.split(' ')[0];
+  if(tT.some(t=>t.s===s&&t.p===pn&&t.o===o)){if(!silent)$('#tHint').textContent='这条事实已经存在了——图是幂等的，重复添加不会产生副本。';return;}
+  tT.push({s,p:pn,o});
+  [[s,typeOf(s)],[o,typeOf(o)]].forEach(([v,t])=>{if(!tN.some(n=>n.id===v))tN.push({id:v,label:v.replace(/"/g,''),t:pn==='a'&&v===o?'cls':t});});
+  tL.push({s,t:o,label:pn});
+  force(tN,tL,880,420);drawGraph(tSvg,tN,tL);
+  const q=v=>v.startsWith('"')?v:':'+v;
+  $('#tLog').innerHTML=tT.map(t=>`<div><span class="hi">${q(t.s)}</span> ${t.p==='a'?'<b>a</b>':':'+t.p} ${q(t.o)} .</div>`).join('');
+  $('#tLog').scrollTop=9999;
+  if(!silent)$('#tHint').textContent=`已有 ${tT.length} 条三元组、${tN.length} 个节点。注意：你从没定义过"表结构"。`;
+}
+$('#tAdd').onclick=()=>addTriple($('#tS').value,$('#tP').value,$('#tO').value);
+$('#tReset').onclick=()=>{tN=[];tL=[];tT=[];tSvg.innerHTML='';$('#tLog').innerHTML='<div class="dim">已清空。</div>';$('#tHint').textContent='';};
+$('#tDemo').onclick=()=>{
+  $('#tReset').click();
+  const d=[['宏远精密','a (类型)','供应商'],['宏远精密','legalName 名称','"宏远精密机械有限公司"'],
+   ['宏远精密','supplies 供应','轴承A'],['轴承A','a (类型)','零件'],['轴承A','partOf 属于','转向节总成'],
+   ['转向节总成','partOf 属于','前悬架'],['前悬架','partOf 属于','底盘平台X5'],['万信机电','supplies 供应','转向节总成']];
+  let i=0;const tk=setInterval(()=>{if(i>=d.length){clearInterval(tk);$('#tHint').textContent='8 条三元组构成了一张连通的图。同样的信息在关系库里需要至少 4 张表。';return;}
+    addTriple(...d[i++],true);},420);
+};
+fillSel();
+
+/* ---------- 06 推理引擎 ---------- */
+const RN=[{id:'LE',label:'LegalEntity 法人实体',t:'cls',x:440,y:42},
+ {id:'SUP',label:'Supplier 供应商',t:'cls',x:215,y:118},{id:'CUS',label:'Customer 客户',t:'cls',x:660,y:118},
+ {id:'HY',label:'宏远精密',t:'ind',x:215,y:205},{id:'WX',label:'万信机电',t:'ind',x:660,y:205},
+ {id:'CRM',label:'CRM:HY-0031',t:'ind',x:440,y:205},
+ {id:'BA',label:'轴承A',t:'ind',x:120,y:300},{id:'SK',label:'转向节总成',t:'ind',x:305,y:300},
+ {id:'BT',label:'螺栓B',t:'ind',x:760,y:300},
+ {id:'FS',label:'前悬架',t:'ind',x:300,y:385},{id:'CH',label:'底盘平台X5',t:'ind',x:520,y:385}];
+const RBASE=[{s:'SUP',t:'LE',label:'subClassOf'},{s:'CUS',t:'LE',label:'subClassOf'},
+ {s:'HY',t:'SUP',label:'a'},{s:'HY',t:'CUS',label:'a',curve:-40},{s:'HY',t:'BA',label:'supplies'},
+ {s:'WX',t:'BT',label:'supplies'},{s:'BA',t:'SK',label:'partOf'},{s:'SK',t:'FS',label:'partOf'},
+ {s:'FS',t:'CH',label:'partOf'},{s:'CRM',t:'HY',label:'owl:sameAs'}];
+const RULES=[
+ {n:'子类传递（rdfs9）',pre:':宏远精密 a :Supplier ．  :Supplier rdfs:subClassOf :LegalEntity',
+  con:':宏远精密 a :LegalEntity',add:[{s:'HY',t:'LE',label:'a ⟵推理',k:'neo',curve:70}],
+  why:'最基础也最常用的推理。它意味着你只需在最具体的层级打标签，所有上层分类自动获得。查询「所有法人实体」时，宏远精密会被返回——尽管数据库里从没有这条记录。'},
+ {n:'域/值域类型推断（rdfs2）',pre:':万信机电 :supplies :螺栓B ．  :supplies rdfs:domain :Supplier',
+  con:':万信机电 a :Supplier',add:[{s:'WX',t:'SUP',label:'a ⟵推理',k:'neo',curve:-90}],
+  why:'注意这条的威力和危险：你从没说过万信机电是供应商，推理机<b>凭一条供货记录就给它分了类</b>。<br><br>威力在于：脏数据、缺标签的数据能被自动补全。<br>危险在于：如果 domain 声明错了，会大批量产生错误分类。<b>这就是为什么校验要交给 SHACL，而不是指望 OWL 报错。</b>'},
+ {n:'传递性属性（partOf）',pre:':轴承A :partOf :转向节总成 ．  :转向节总成 :partOf :前悬架 ．  :前悬架 :partOf :底盘平台X5 ． 且 :partOf a owl:TransitiveProperty',
+  con:':轴承A :partOf :前悬架 ．  :轴承A :partOf :底盘平台X5 ．  :转向节总成 :partOf :底盘平台X5',
+  add:[{s:'BA',t:'FS',label:'partOf ⟵推理',k:'neo',curve:60},{s:'BA',t:'CH',label:'partOf ⟵推理',k:'neo',curve:110},{s:'SK',t:'CH',label:'partOf ⟵推理',k:'neo',curve:-55}],
+  why:'<b>这一条就值回票价。</b>「这个零件最终装在哪些平台上」在 SQL 里是递归 CTE，深度未知、性能不可控、每换一个层级维度就要重写。<br><br>在本体里只需一行声明 <code>owl:TransitiveProperty</code>，之后所有跨层级问题都自动可答。召回、质量追溯、供应链断供影响分析，全部受益。'},
+ {n:'逆属性（inverseOf）',pre:':宏远精密 :supplies :轴承A ．  :supplies owl:inverseOf :suppliedBy',
+  con:':轴承A :suppliedBy :宏远精密 ．  :螺栓B :suppliedBy :万信机电',
+  add:[{s:'BA',t:'HY',label:'suppliedBy ⟵推理',k:'neo',curve:-45},{s:'BT',t:'WX',label:'suppliedBy ⟵推理',k:'neo',curve:-45}],
+  why:'录一次，双向可查。在关系库里你要么建两张关联表（冗余、可能不一致），要么在每个查询里判断方向。本体把这件事下沉到了数据层。'},
+ {n:'sameAs 实体合并',pre:':CRM:HY-0031 owl:sameAs :宏远精密（依据：两者 :creditCode 相同，而 :creditCode 是 InverseFunctionalProperty）',
+  con:'两个 IRI 指向同一实体，所有属性与关系<b>双向传播</b>',
+  add:[{s:'CRM',t:'SUP',label:'a ⟵推理',k:'neo',curve:-60},{s:'CRM',t:'BA',label:'supplies ⟵推理',k:'neo',curve:75}],
+  why:'这就是<b>本体版的主数据管理</b>。CRM 里那条孤立的客户记录，瞬间继承了 SRM 里这家公司的全部供应关系。<br><br>企业里最贵的数据问题——「同一个客户在七个系统里有七个 ID」——在本体里通过 sameAs + InverseFunctional 属性得到形式化、可推理、可追溯的解决，而不是靠一堆写死的 ETL 匹配规则。'},
+ {n:'规则链：断供风险传导',pre:'新增事实 :宏远精密 a :SanctionedSupplier ．  规则：被制裁供应商供应的零件为高风险零件；包含高风险零件的任何总成同样为高风险',
+  con:':轴承A、:转向节总成、:前悬架、:底盘平台X5 全部标记为高风险',
+  add:[],mark:['HY','BA','SK','FS','CH'],
+  why:'<b>这是本体在企业里最具冲击力的场景。</b>只增加了一条事实（某供应商被制裁），推理链自动沿着 partOf 关系一路传导到整车平台，风险敞口在几秒内被完整识别。<br><br>用 SQL 做同样的事：需要预先知道要查几层、写死递归、每次监管口径变化都要改代码。用本体：改一条规则即可，规则本身也是数据。<br><br>这类「一条新事实引发全局重算」的能力，正是金融风控、供应链合规、药物警戒最依赖本体的原因。'},
+ {n:'一致性检查（发现建模错误）',pre:'假设我们声明 :Supplier owl:disjointWith :Customer（供应商与客户互斥）',
+  con:'❌ 不一致！:宏远精密 同时是 :Supplier 和 :Customer',add:[],bad:['HY'],
+  why:'推理机不仅能推出新知识，还能<b>告诉你模型错了</b>。<br><br>这里的错误在于建模思路：现实中一家公司完全可以既供货又采购，所以 Supplier 与 Customer <b>不应该被建成互斥的类</b>。<br><br>正确做法是<b>角色建模（Role Modeling）</b>：LegalEntity 是实体本身，Supplier/Customer 是它在某段时间、某个业务关系中扮演的角色，用 <code>:playsRole</code> 关联。<br><br><b>这是本体工程里最经典的一课</b>——推理机把你脑子里没想清楚的业务概念，用一个「不一致」报错逼出来了。传统建模里，这种概念混乱会一直藏到系统上线后才爆发。'}];
+let rActive=new Set();
+function renderR(){
+  const nodes=RN.map(n=>({...n}));const links=RBASE.map(l=>({...l}));const idx={};nodes.forEach(n=>idx[n.id]=n);
+  let log=[];
+  [...rActive].sort().forEach(i=>{const r=RULES[i];
+    (r.add||[]).forEach(a=>links.push({...a}));
+    (r.mark||[]).forEach(id=>{if(idx[id]){idx[id].t='neo';idx[id].badge='高风险';idx[id].hot=1;}});
+    (r.bad||[]).forEach(id=>{if(idx[id]){idx[id].t='bad';idx[id].hot=1;idx[id].badge='冲突';}});
+    log.push(`<div style="margin-bottom:10px"><b class="hi">${r.n}</b><br><span class="dim">前提：</span>${r.pre}<br><span class="${r.bad?'bad':'ok'}">结论：${r.con}</span><br><span style="color:var(--ink2)">${r.why}</span></div>`);});
+  drawGraph($('#rSvg'),nodes,links);
+  $('#rLog').innerHTML=log.length?log.join(''):'<div class="dim">选择一条规则开始。每条规则会显示：前提 → 结论 → 为什么重要。</div>';
+  $$('#ruleBtns button').forEach((b,i)=>b.classList.toggle('on',rActive.has(i)));
+}
+$$('#ruleBtns button').forEach(b=>b.onclick=()=>{const i=+b.dataset.r;rActive.has(i)?rActive.delete(i):rActive.add(i);renderR();});
+$('#rReset').onclick=()=>{rActive.clear();renderR();};
+$('#rAll').onclick=()=>{rActive=new Set(RULES.map((_,i)=>i));renderR();};
+renderR();
+
+/* ---------- 07 14 维对比 ---------- */
+const CMP=[
+['建模目的','让数据<b>存得下、查得快</b>：范式化、索引、分区都是为存储引擎服务。','让概念<b>被共同理解</b>：可复用、可交换、可推理，独立于任何存储实现。','当你的目标从"支撑一个系统"变成"让 N 个系统和 AI 共享一套语义"，数据模型就不够用了。'],
+['世界假设','<b>封闭世界（CWA）</b>：表里没有 = 不存在。<code>NOT EXISTS</code> 返回真。','<b>开放世界（OWA）</b>：图里没有 = 未知。缺失只代表还没录入。','这是最容易踩坑的一条。你以为的"必填校验"在 OWL 里不会报错。<b>校验请用 SHACL。</b>'],
+['唯一命名假设','<b>有 UNA</b>：两个不同主键 = 两个不同实体，天经地义。','<b>无 UNA</b>：两个不同 IRI 可能指同一个东西，需 <code>owl:sameAs</code> 显式声明，或 <code>owl:differentFrom</code> 显式否认。','正因为放弃了 UNA，本体才能优雅地处理"同一家公司在七个系统七个 ID"这种现实。'],
+['Schema 的角色','<b>强制约束</b>：不符合表结构的数据根本写不进去，schema-on-write。','<b>描述 + 推理</b>：本体描述"世界大概长什么样"，数据可以先进来后对齐，schema-later 友好。','本体层允许你先接入脏数据、再逐步施加语义，这对企业存量数据整合极其重要。'],
+['标识体系','<b>主键</b>：库内唯一、含义局部、经常是自增整数。','<b>IRI</b>：全球唯一、可解引用（能当网址打开）、天然跨组织不冲突。','IRI 策略是本体项目第一个要定的规范，改起来代价极大。<b>别用会变的业务码当 IRI。</b>'],
+['关系的表达','<b>外键</b>：只是一个整数列，语义藏在列名和文档里，机器读不懂。','<b>命名属性</b>：<code>:supplies</code> 自带名字、定义域、值域、传递性、逆属性等一整套语义。','这是让 LLM 能正确使用你的数据的关键——它读到 <code>:supplies</code> 就知道这是供货关系。'],
+['继承与多重分类','单一归属：一行记录只在一张表里；实现继承要用单表继承、类表继承等妥协方案。','<b>多重继承 + 多重分类</b>：一个类可有多个父类，一个个体可同时属于多个类。','"既是供应商又是客户""既是员工又是股东"——这类现实在本体里是默认支持，在 ER 里是设计难题。'],
+['演化成本','改结构 = DDL + 数据迁移 + 应用改造 + 停机窗口，跨团队协调成本高。','加一条三元组即可扩展；新增的属性对老查询完全无影响。','企业本体能长期演化十几年而不推倒重来，关系模型很难做到。'],
+['推理能力','<b>没有</b>。只能查询已显式存储的行，一切派生逻辑写在应用代码或 ETL 里。','<b>内建</b>：分类推理、传递闭包、等价合并、一致性检查，由推理机统一执行。','业务规则从散落在代码各处，收敛成本体里可审计、可版本管理的公理。'],
+['复用与共享','几乎不复用。别家的表结构对你毫无价值。','<b>可站在巨人肩上</b>：FIBO、SNOMED CT、schema.org、GS1 等成熟本体可直接引入并扩展。','对监管行业尤其重要——用行业标准本体建模，等于自带合规语义与外部互通能力。'],
+['稀疏与异构数据','宽表里大量 NULL，或者拆成一堆稀疏关联表；异构属性很难优雅处理。','<b>天然稀疏友好</b>：没有的属性就是不写三元组，没有 NULL 的概念。','产品目录、设备台账这类"每类东西属性都不一样"的场景，本体的建模成本低一个数量级。'],
+['查询范式','SQL：擅长集合运算与聚合，<b>不擅长深度未知的路径遍历</b>（递归 CTE 难写难优化）。','SPARQL / Cypher：图模式匹配 + 属性路径，<b>多跳与路径是一等公民</b>。','"谁通过多层股权控制了这家公司""这个缺陷零件影响了哪些车型"——这类问题决定了要不要上图。'],
+['数据质量校验','数据库约束（NOT NULL、CHECK、外键）+ 应用层校验，分散且难以复用。','<b>SHACL 形状</b>：把校验规则写成独立、可版本管理、可跨数据源复用的数据资产。','SHACL 报告能精确指出"哪个节点违反了哪条形状的哪个约束"，非常适合做数据质量看板。'],
+['面向对象','<b>面向应用</b>：ERP 有 ERP 的模型，CRM 有 CRM 的模型，天然割裂。','<b>面向领域</b>：描述业务本身，因此可以作为多个应用之间的共同语言与集成中枢。','这就是本体常被称为"语义层"或"数据编织（Data Fabric）中枢"的原因。']];
+$('#cmpList').innerHTML=CMP.map((c,i)=>`<div class="acc"><div class="q"><span>${String(i+1).padStart(2,'0')} · ${c[0]}</span><span class="ic">+</span></div>
+<div class="a"><div class="cmp" style="margin:12px 0"><div><h5 style="color:var(--ink3)">关系 / ER 数据建模</h5><p style="margin:0;font-size:13.5px">${c[1]}</p></div>
+<div><h5 style="color:var(--accent)">本体 Ontology</h5><p style="margin:0;font-size:13.5px">${c[2]}</p></div></div>
+<p style="margin:0;font-size:13.5px"><b style="color:var(--ink)">项目里意味着什么：</b>${c[3]}</p></div></div>`).join('');
+document.addEventListener('click',e=>{const q=e.target.closest('.acc>.q');if(q)q.parentElement.classList.toggle('open');});
+
+/* ---------- 08 技术栈 ---------- */
+const STACK=[
+ {y:36,x:60,w:580,l:'应用层：知识图谱 · GraphRAG · 语义层 · 数据编织',c:'ind',d:'<b>应用层</b>——真正产生业务价值的地方。下面五层都是为了让这一层成为可能：AI 知识库、智能问答、主数据治理、监管报送、数字孪生。'},
+ {y:100,x:60,w:580,l:'SPARQL 1.1 —— 查询 · 更新 · 联邦',c:'cls',d:'<b>SPARQL</b>：图的 SQL。核心是图模式匹配，把带变量的子图丢给引擎去大图里找匹配。属性路径（<code>:partOf+</code>）让任意深度的遍历变成一行代码。<code>SERVICE</code> 关键字可以跨多个远程端点联邦查询——这是关系库完全没有的能力。'},
+ {y:164,x:60,w:285,l:'OWL 2 —— 推理（EL / QL / RL）',c:'cls',d:'<b>OWL 2</b>：基于描述逻辑的本体语言，负责<b>推理</b>。提供传递性、对称性、逆属性、基数约束、类的交并补、互斥与等价。三个 Profile 是在表达力与计算复杂度之间的取舍：<br>• <b>EL</b>：只保留大规模类层次相关的构造，多项式时间可判定，SNOMED CT 等超大医学本体的标配。<br>• <b>QL</b>：可改写成 SQL 在关系库上直接跑，适合 OBDA（基于本体的数据访问）。<br>• <b>RL</b>：可用规则引擎前向链物化，工程实现最简单，<b>企业落地首选</b>。'},
+ {y:164,x:355,w:285,l:'SHACL —— 形状校验',c:'neo',d:'<b>SHACL</b>（W3C 2017）：用「形状」描述数据必须满足的条件，<b>封闭世界语义，违反就报错</b>。<br>例：<code>:SupplierShape sh:targetClass :Supplier ; sh:property [ sh:path :creditCode ; sh:minCount 1 ; sh:pattern "^[0-9A-Z]{18}$" ]</code><br>它和 OWL 不是竞争关系：<b>OWL 负责"推出更多知识"，SHACL 负责"把关数据质量"</b>，两者在同一份图上分工协作。'},
+ {y:228,x:60,w:580,l:'RDFS —— 轻量类型系统（subClassOf / domain / range）',c:'cls',d:'<b>RDFS</b>：只有四个核心构造——子类、子属性、定义域、值域。简单到可以在一下午学会，却<b>足以支撑 80% 的企业本体需求</b>。如果你的项目刚起步，从纯 RDFS 开始是最稳妥的选择。'},
+ {y:292,x:60,w:580,l:'RDF —— 数据模型：主语 · 谓语 · 宾语',c:'cls',d:'<b>RDF</b>：整个体系的地基，规定一切知识都表示为三元组。加上命名图（Named Graph）构成四元组，用来记录「这批事实来自哪个系统、什么时候采集的」——<b>AI 溯源能力的物理基础</b>。RDF-star 进一步允许对一条三元组本身做陈述（置信度、时效、来源）。'},
+ {y:356,x:60,w:580,l:'IRI · Unicode · XML Schema 数据类型',c:'lit',d:'<b>基础设施层</b>：IRI 提供全球唯一标识（国际化的 URI，支持中文），Unicode 提供字符编码，XSD 提供 <code>xsd:string / xsd:date / xsd:decimal</code> 等数据类型。看似平淡，但 IRI 是整个语义网能够"全球可合并"的根本原因。'}];
+const SER=[['Turtle (.ttl)','人类最易读，本体开发的默认格式'],['JSON-LD','JSON 兼容，前端与 API 首选，也是 schema.org 的推荐格式'],['N-Triples','一行一条三元组，适合流式处理与大批量导入'],['RDF/XML','最早的官方格式，冗长，新项目基本不用了']];
+(function(){const s=$('#stackSvg');s.innerHTML='';
+ STACK.forEach((L,i)=>{const c=PAL[L.c];const g=E('g',{style:'cursor:pointer'},s);
+  E('rect',{x:L.x,y:L.y,width:L.w,height:52,rx:9,fill:c[0],stroke:c[1],'stroke-width':1},g);
+  const t=E('text',{x:L.x+L.w/2,y:L.y+31,'text-anchor':'middle','font-size':13.5,fill:c[2],'font-family':'inherit'},g);
+  t.textContent=L.l;
+  g.onmouseenter=()=>$('#stackLog').innerHTML='<div>'+L.d+'</div>';});
+ const tt=E('text',{x:660,y:214,'font-size':12,fill:'var(--ink3)','font-family':'inherit'},s);tt.textContent='序列化格式（同一份图的四种写法）';
+ SER.forEach(([n,d],i)=>{const y=228+i*46;const g=E('g',{style:'cursor:pointer'},s);
+  E('rect',{x:660,y:y,width:170,height:38,rx:8,fill:'var(--surface2)',stroke:'var(--line2)'},g);
+  const t=E('text',{x:745,y:y+23,'text-anchor':'middle','font-size':12,fill:'var(--ink2)','font-family':'inherit'},g);t.textContent=n;
+  g.onmouseenter=()=>$('#stackLog').innerHTML=`<div><b>${n}</b>：${d}。<br><span class="dim">四种格式承载的是完全相同的三元组，可以无损互转——这一点和 JSON/XML/CSV 的关系不同，它们只是同一个抽象数据模型的不同书写方式。</span></div>`;});
+ const l2=E('text',{x:660,y:60,'font-size':12,fill:'var(--ink3)','font-family':'inherit'},s);l2.textContent='越往上，语义越强';
+ E('path',{d:'M700 380 L700 90',stroke:'var(--line2)','stroke-width':1.2,fill:'none','marker-end':'url(#stkA)'},s);
+ const df=E('defs',{},s);const m=E('marker',{id:'stkA',viewBox:'0 0 10 10',refX:9,refY:5,markerWidth:6,markerHeight:6,orient:'auto-start-reverse'},df);
+ E('path',{d:'M1 1L9 5L1 9',fill:'none',stroke:'var(--line2)','stroke-width':1.6},m);
+})();
+
+/* ---------- 09 SPARQL ---------- */
+const QT=[];
+function T(s,p,o){QT.push({s,p,o});}
+T('宏远精密','a','Supplier');T('宏远精密','a','Customer');T('万信机电','a','Supplier');
+T('宏远精密','supplies','轴承A');T('宏远精密','supplies','密封圈C');T('万信机电','supplies','螺栓B');
+T('轴承A','partOf','转向节总成');T('螺栓B','partOf','转向节总成');T('密封圈C','partOf','前悬架');
+T('转向节总成','partOf','前悬架');T('前悬架','partOf','底盘平台X5');T('底盘平台X5','a','Platform');
+T('底盘平台X5','usedBy','车型SUV-01');T('底盘平台X5','usedBy','车型MPV-03');
+const QPOS={'宏远精密':[130,60],'万信机电':[130,270],'Supplier':[130,165],'Customer':[300,40],
+ '轴承A':[330,110],'密封圈C':[330,180],'螺栓B':[330,265],'转向节总成':[500,180],'前悬架':[640,180],
+ '底盘平台X5':[770,180],'Platform':[770,90],'车型SUV-01':[770,265],'车型MPV-03':[640,290]};
+function closure(pred){const out=[];const adj={};QT.filter(t=>t.p===pred).forEach(t=>{(adj[t.s]=adj[t.s]||[]).push(t.o);});
+ for(const s in adj){const seen=new Set(),st=[...adj[s]];while(st.length){const x=st.pop();if(seen.has(x))continue;seen.add(x);out.push({s,p:pred+'+',o:x});(adj[x]||[]).forEach(y=>st.push(y));}}
+ return out;}
+function bgp(patterns){let bs=[{}];const paths={};
+ patterns.forEach(p=>{if(p[1].endsWith('+')&&!paths[p[1]])paths[p[1]]=closure(p[1].slice(0,-1));});
+ for(const pat of patterns){const nb=[];
+  const pool=pat[1].endsWith('+')?paths[pat[1]]:QT;
+  for(const b of bs){const s=pat[0][0]==='?'&&b[pat[0]]!==undefined?b[pat[0]]:pat[0];
+   const o=pat[2][0]==='?'&&b[pat[2]]!==undefined?b[pat[2]]:pat[2];
+   for(const t of pool){if(t.p!==pat[1])continue;
+    if(s[0]!=='?'&&s!==t.s)continue;if(o[0]!=='?'&&o!==t.o)continue;
+    const x={...b};if(s[0]==='?')x[s]=t.s;if(o[0]==='?')x[o]=t.o;
+    x.__e=[...(b.__e||[]),t.s+'|'+pat[1]+'|'+t.o];nb.push(x);}}
+  bs=nb;}
+ return bs;}
+const QUERIES=[
+ {n:'哪些供应商供应了轴承A？',q:`SELECT ?s WHERE {
+  ?s  a          :Supplier .
+  ?s  :supplies  :轴承A .
+}`,p:[['?s','a','Supplier'],['?s','supplies','轴承A']],cols:['?s'],
+  note:'最基础的图模式匹配：两个模式取交集，等价于 SQL 的一次 JOIN。'},
+ {n:'宏远精密供应的所有零件',q:`SELECT ?part WHERE {
+  :宏远精密  :supplies  ?part .
+}`,p:[['宏远精密','supplies','?part']],cols:['?part'],
+  note:'单模式查询，等价于 SQL 的一次 WHERE 过滤。到这里为止，SQL 完全可以平替。'},
+ {n:'轴承A 最终装到了哪些更高层级上？（任意跳数）',q:`SELECT ?up WHERE {
+  :轴承A  :partOf+  ?up .        # + 表示沿 partOf 走 1 到 N 跳
+}`,p:[['轴承A','partOf+','?up']],cols:['?up'],
+  note:'<b>分水岭在这里。</b><code>:partOf+</code> 是属性路径，一行代码完成任意深度的传递闭包。SQL 需要写递归 CTE，而且你必须事先知道大概几层、还要防死循环。'},
+ {n:'如果宏远精密断供，哪些整车平台会受影响？',q:`SELECT DISTINCT ?platform WHERE {
+  :宏远精密  :supplies  ?part .
+  ?part      :partOf+   ?platform .
+  ?platform  a          :Platform .
+}`,p:[['宏远精密','supplies','?part'],['?part','partOf+','?platform'],['?platform','a','Platform']],cols:['?part','?platform'],
+  note:'<b>这就是企业真正想要的那类问题。</b>三个模式串起「供应商→零件→任意层级装配→且必须是整车平台」。<br>在关系库里：递归 CTE + 多次 JOIN + 类型过滤，几十行且难维护。在图里：4 行，且业务人员基本能读懂。'},
+ {n:'哪些企业既是供应商又是客户？',q:`SELECT ?org WHERE {
+  ?org  a  :Supplier .
+  ?org  a  :Customer .
+}`,p:[['?org','a','Supplier'],['?org','a','Customer']],cols:['?org'],
+  note:'多重分类的直接收益。在 ER 模型里要做这件事，你得先解决「同一家公司在两张表里两个 ID」的问题——而那往往是一个独立的主数据项目。'}];
+function runQ(i){
+  const Q=QUERIES[i];$('#qName').textContent=Q.n;$('#qSparql').innerHTML=hlLine2(Q.q);
+  $$('#qChips .chip').forEach((c,j)=>c.classList.toggle('on',i===j));
+  const bs=bgp(Q.p);
+  const hits=new Set(),he=new Set();
+  bs.forEach(b=>{Q.cols.forEach(c=>{if(b[c])hits.add(b[c]);});(b.__e||[]).forEach(e=>he.add(e));});
+  const edgeHit=new Set();
+  he.forEach(e=>{const[a,p,z]=e.split('|');
+    if(!p.endsWith('+')){edgeHit.add(e);return;}
+    const pr=p.slice(0,-1),st=[a],seen=new Set();
+    while(st.length){const cur=st.pop();if(seen.has(cur))continue;seen.add(cur);
+      QT.filter(t=>t.p===pr&&t.s===cur).forEach(t=>{edgeHit.add(t.s+'|'+pr+'|'+t.o);if(t.o!==z)st.push(t.o);});}});
+  const N=Object.keys(QPOS).map(id=>({id,label:id,t:hits.has(id)?'hit':(id==='Supplier'||id==='Customer'||id==='Platform')?'cls':'ind',
+    x:QPOS[id][0],y:QPOS[id][1],hot:hits.has(id)}));
+  const L=QT.map(t=>({s:t.s,t:t.o,label:t.p,k:edgeHit.has(t.s+'|'+t.p+'|'+t.o)?'hit':'base'}));
+  drawGraph($('#qSvg'),N,L);
+  const rows=[...new Map(bs.map(b=>[Q.cols.map(c=>b[c]).join('|'),b])).values()];
+  $('#qResult').innerHTML=`<div style="font-size:13px;color:var(--ink2);margin-bottom:10px">${Q.note}</div>
+   <table style="margin:0"><tr>${Q.cols.map(c=>`<th>${c}</th>`).join('')}</tr>
+   ${rows.map(b=>`<tr>${Q.cols.map(c=>`<td>${b[c]||''}</td>`).join('')}</tr>`).join('')}</table>
+   <div style="font-size:12.5px;color:var(--ink3);margin-top:8px">返回 ${rows.length} 行 · 图中<span style="color:var(--amber)">橙色节点</span>为命中结果</div>`;
+}
+function hlLine2(s){return esc(s).replace(/(#.*)$/gm,'<span class="c">$1</span>')
+ .replace(/\b(SELECT|WHERE|DISTINCT|FILTER|OPTIONAL|PREFIX)\b/g,'<span class="k">$1</span>')
+ .replace(/(\?[a-zA-Z]+)/g,'<span class="n">$1</span>');}
+$('#qChips').innerHTML=QUERIES.map((q,i)=>`<span class="chip" data-i="${i}">${i+1} · ${q.n}</span>`).join('');
+$$('#qChips .chip').forEach(c=>c.onclick=()=>runQ(+c.dataset.i));
+runQ(0);
+</script>
+<script>
+/* ---------- 10 八种失效 ---------- */
+const FAILS=[
+['多跳推理断链','「宏远精密断供会影响哪些在售车型？」','答案需要跨越 供应商→零件→总成→平台→车型 五层关系。<b>没有任何一个文档片段同时包含这五层信息</b>，向量检索永远只能捞回其中一两跳，LLM 只好编。','把关系显式存成图，用 <code>partOf+</code> 一次遍历到底，证据链完整。'],
+['全局与汇总类问题','「过去一年质量事故最集中的三个部件族是哪些？」','top-k 检索天生只能取回 k 个片段，<b>而这个问题需要看全部数据后做统计</b>。取 k=20 和 k=200 会给出完全不同的答案，且都不对。','图上做聚合查询，或用 GraphRAG 的社区摘要机制预先生成分层汇总。'],
+['语义相近但业务不同','「退货率」vs「退款率」、「客户」vs「用户」vs「会员」、「毛利」vs「毛利率」','这些词在 embedding 空间里距离极近，检索器几乎必然混淆。<b>而在业务上它们的口径可能差出几个数量级</b>，财报级别的错误。','本体里它们是不同的类/指标，有各自的定义、计算口径和互斥声明，LLM 无从混淆。'],
+['否定与排除条件','「除华东以外的经销商」「不含延保的在保设备」','向量相似度对否定词几乎不敏感——「包含华东」和「排除华东」的向量非常接近。检索回来的片段常常正好是要被排除的那些。','约束表达为图查询的 <code>FILTER NOT EXISTS</code>，是精确的集合运算，不是相似度。'],
+['无法做结构化计算','「TOP 5 供应商占采购额的比例，同比变化多少？」','检索不产生计算。LLM 拿到一堆文本片段后心算，<b>数字幻觉概率极高且难以察觉</b>。','本体把指标定义映射到可执行查询，数字由数据库算出来，LLM 只负责组织语言。'],
+['切分割裂上下文','一张跨页的价格表被切成 5 段；一份合同的「定义」条款和「违约责任」条款相隔 40 页','chunk 边界是按字数切的，不是按语义单元切的。<b>被切碎的表格和被拆散的条款引用，是 RAG 事故的重灾区。</b>','按本体定义的实体粒度组织知识：一个「合同条款」就是一个节点，定义与引用之间用显式关系连接。'],
+['时效与版本混淆','2023 版和 2025 版管理制度，文本相似度 95%','向量检索会把两个版本一起返回，LLM 无法判断哪个现行有效，经常混着答，甚至拼接出一个不存在的版本。','图中每条事实挂载生效时间与版本，查询时按时间点过滤（时序知识图谱）。'],
+['权限与溯源缺失','「这个答案是根据哪条数据得出的？」「这个用户能看到这条信息吗？」','向量库里只有文本和向量，<b>没有地方挂载行级权限、密级和来源</b>。要么全员可见（合规风险），要么整库封锁（没法用）。','权限、密级、来源、置信度都作为属性挂在节点和边上，查询时天然过滤，答案可逐条溯源。']];
+$('#failList').innerHTML=FAILS.map((f,i)=>`<div class="acc"><div class="q"><span>${String(i+1).padStart(2,'0')} · ${f[0]}</span><span class="ic">+</span></div>
+<div class="a"><div class="kv" style="margin-top:10px"><b>典型提问</b><span style="color:var(--ink)">${f[1]}</span></div>
+<div class="kv"><b>为什么翻车</b><span>${f[2]}</span></div>
+<div class="kv" style="border:none"><b>本体怎么解</b><span style="color:var(--teal)">${f[3]}</span></div></div></div>`).join('');
+
+/* ---------- 11 RAG vs GraphRAG ---------- */
+const RA=[['把问题转成向量','question → [0.021, -0.44, …] 768 维'],
+ ['在向量库里检索 top-8 片段','命中：《宏远精密供应商档案》《轴承A 技术规格书》《2025 采购年报》'],
+ ['拼接进 Prompt','8 段文本共约 4000 字，彼此没有关联信息'],
+ ['LLM 生成','模型看到「宏远供应轴承A」，但<b>看不到轴承A 装在哪</b>'],
+ ['❌ 输出','「宏远精密主要供应轴承类产品，可能影响使用该类零件的车型。」<br><span style="color:var(--red)">正确但无用——没给出任何具体车型，或者干脆编两个车型出来。</span>',1]];
+const RB=[['识别问题中的实体，链接到本体','「宏远精密」→ <code>:HongYuan</code>（Supplier）；「在售车型」→ <code>:Model</code> 类且 status=在售'],
+ ['在图上定位起点节点','找到 <code>:HongYuan</code>，读取其 <code>:supplies</code> 邻域'],
+ ['沿本体定义的路径多跳遍历','<code>:supplies → :partOf+ → :usedBy</code>，一次性走完五层，得到精确子图'],
+ ['子图 + 原文片段一起交给 LLM','结构化事实 12 条 + 佐证文档 3 段，token 反而更少'],
+ ['✅ 输出','「宏远精密供应轴承A、密封圈C。轴承A 经转向节总成→前悬架装配至底盘平台X5，该平台用于在售车型 SUV-01 与 MPV-03；密封圈C 直接用于前悬架，影响范围相同。<br>依据：SRM-2025-0431（供货关系）、BOM v7.2（装配关系）。」<br><span style="color:var(--teal)">具体、完整、可溯源、可验证。</span>',2]];
+function renderRag(a,b){
+  const f=(arr,n)=>arr.slice(0,n).map((s,i)=>`<div class="fade" style="display:flex;gap:10px;padding:9px 0;border-bottom:1px solid var(--line)">
+   <div style="flex:none;width:20px;height:20px;border-radius:50%;font-size:11px;display:flex;align-items:center;justify-content:center;
+   background:${s[2]===1?'var(--redSoft)':s[2]===2?'var(--tealSoft)':'var(--surface3)'};color:${s[2]===1?'var(--red)':s[2]===2?'var(--teal)':'var(--ink3)'};margin-top:2px">${i+1}</div>
+   <div><div style="font-size:13.5px;font-weight:600;color:var(--ink)">${s[0]}</div><div style="font-size:12.5px;color:var(--ink2);margin-top:2px">${s[1]}</div></div></div>`).join('');
+  $('#ragA').innerHTML=f(RA,a);$('#ragB').innerHTML=f(RB,b);
+}
+let ragTimer=null;
+$('#ragRun').onclick=()=>{clearInterval(ragTimer);let i=0;
+  ragTimer=setInterval(()=>{i++;renderRag(Math.min(i,RA.length),Math.min(i,RB.length));
+    if(i>=Math.max(RA.length,RB.length))clearInterval(ragTimer);},780);renderRag(1,1);};
+$('#ragReset').onclick=()=>{clearInterval(ragTimer);renderRag(0,0);};
+renderRag(0,0);
+
+/* ---------- 12 六大作用 ---------- */
+const ROLES=[
+['① 抽取的目标 Schema','让 LLM 从非结构化文本里抽实体和关系时，<b>给它一份受控的类型清单</b>，而不是任其自由发挥。抽出来的图结构一致、可对齐、可推理。这一条决定了整个知识库的质量上限。','没有 schema 约束的抽取，同一家公司会出现十几种写法、关系名五花八门，多跳时到处断链。'],
+['② 消歧与实体对齐','「苹果」是水果、公司还是手机型号？「张伟」是哪个张伟？本体提供类型约束和唯一标识属性（如统一社会信用代码声明为 InverseFunctional），让机器<b>自动判定两条记录是不是同一个东西</b>。','这是企业主数据管理几十年的老问题，本体给了一个形式化、可推理、可追溯的解法。'],
+['③ 检索的导航结构','本体告诉检索器「从这个实体出发，有哪些有意义的路径可以走」。多跳检索、邻域扩展、子图召回都依赖它。<b>没有本体，图遍历就是在噪音里随机游走。</b>','这是 GraphRAG 相对向量 RAG 最本质的优势来源。'],
+['④ 可解释性与证据链','图上每条边都能追到来源系统、抽取时间、原文位置。答案可以逐条展开成「依据 A + 依据 B ⇒ 结论」。<b>在金融、医疗、法务这些必须解释的场景，这是硬门槛。</b>','向量 RAG 只能告诉你「参考了这 8 段文本」，说不清哪句话支撑了哪个结论。'],
+['⑤ 权限、时效、置信度的挂载点','节点和边上可以挂密级、有效期、数据来源、置信分。查询时按当前用户身份和时间点过滤。<b>没有这一层，企业知识库根本无法通过安全合规评审。</b>','RDF 的命名图、RDF-star，或 LPG 的边属性，都是为这件事准备的。'],
+['⑥ 语义层：让 LLM 不再猜字段','把 <code>dwd_ord_dtl_di.amt_1</code> 映射成「订单实付金额（不含运费，单位元）」，把「GMV」的口径固化下来。LLM 面向业务概念生成查询，而不是面向物理表名。','这是 Text2SQL 落地的关键，也是很多企业口中「数据本体」的真实所指。']];
+$('#sixRoles').innerHTML=ROLES.map(r=>`<div class="card" style="margin:0"><h4 style="margin:0 0 8px">${r[0]}</h4>
+<p style="margin:0 0 10px;font-size:13.5px">${r[1]}</p>
+<div style="font-size:12.5px;color:var(--ink3);border-top:1px dashed var(--line);padding-top:8px">${r[2]}</div></div>`).join('');
+
+/* ---------- 14 行业案例 ---------- */
+const CASES=[
+['通用上层本体',[
+ ['schema.org','Google / Microsoft / Yahoo / Yandex 联合发起（2011）','约 800 个类型、1400+ 属性','Thing → Organization / Person / Product / Event / CreativeWork；属性如 <code>brand</code> <code>offers</code> <code>author</code>','全球数千万网站用它标注结构化数据。<b>它是搜索引擎和大模型理解网页的通用词汇表</b>——你的官网加上 schema.org 标注，AI 才能准确回答关于你公司的问题。入门本体的最佳起点。'],
+ ['Gist','Semantic Arts（Dave McComb 团队）','极简，约百余个核心概念','Category / Event / Organization / Agreement / Magnitude / Place / Task','<b>「企业最小够用本体」的代表作</b>。核心主张：企业 90% 的概念可以由极少数上层概念组合而成，不需要成千上万个类。对「不知道从哪开始」的企业极有参考价值。'],
+ ['BFO','Basic Formal Ontology，已成为 ISO/IEC 21838-2 国际标准','约 30 余个类，极度抽象','Continuant（持续体：对象、性质）vs Occurrent（发生体：过程、事件）的根本二分','学术与政府/军工领域的顶层规范。工业本体（IOF）、生命科学本体（OBO Foundry）大多以它为顶层。<b>企业项目一般不需要直接用它，但了解「持续体 / 发生体」的二分对建模思维很有帮助。</b>'],
+ ['SKOS / Dublin Core / PROV-O','W3C','小而精','SKOS：<code>broader</code> <code>narrower</code> <code>related</code> <code>prefLabel</code> <code>altLabel</code>；PROV-O：<code>wasDerivedFrom</code> <code>wasGeneratedBy</code> <code>wasAttributedTo</code>','SKOS 做词表和分类法，成本极低见效快，<b>建议作为企业的第一个语义资产</b>。PROV-O 做数据血缘与溯源，正好对应 AI 知识库的可解释性需求。'],
+ ['Wikidata','维基媒体基金会','超过一亿个条目','以 QID 标识实体（如 Q95 = Google），属性以 P 编号','世界上最大的开放知识图谱，常被用作实体链接的外部锚点——把你的内部实体对齐到 Wikidata，就获得了大量外部背景知识。']]],
+['金融',[
+ ['FIBO','EDM Council（金融数据管理协会），OMG 标准化','数千个类，模块化组织（Foundations / Business Entities / Financial Instruments / Securities / Derivatives / Loans 等）','<code>LegalEntity</code> <code>isDomiciledIn</code> <code>hasLegalName</code> <code>ControllingInterest</code> <code>hasUltimateParent</code> <code>FinancialInstrument</code> <code>Debt</code> <code>Equity</code>','<b>金融行业最重要的公共本体。</b>核心价值在于对「法人实体及其所有权/控制权层级」的精确建模——这正是 2008 年危机后监管（BCBS 239 风险数据汇总、LEI 全球法人识别编码）最关注的东西：<b>当一家机构倒闭，谁真正持有它、它又控制着谁。</b>用 SQL 做多层股权穿透极其痛苦，用本体的传递性属性是天然解法。'],
+ ['LEI / GLEIF','全球法人识别编码基金会','数百万法人实体','20 位 LEI 码 + Level 1（谁是谁）+ Level 2（谁拥有谁）','把 FIBO 的所有权模型落到了全球实际数据上，是跨境金融合规的身份基础设施。'],
+ ['反欺诈 / 反洗钱图谱','各大银行与支付机构的内部实践','—','账户、设备、IP、手机号、收货地址、担保关系构成的多层网络','<b>图谱在金融风控的杀手级应用。</b>单笔交易看起来正常，但「同一设备关联 300 个账户」「资金在 6 个账户间闭环流转」这类模式只有在图上才看得见。本体的作用是统一多源数据的实体口径，让这些模式能被稳定识别。']]],
+['医疗与生命科学',[
+ ['SNOMED CT','SNOMED International（多国政府成员制）','约 35 万以上活跃临床概念，是世界上最大的临床术语体系','<code>Clinical finding</code> <code>Procedure</code> <code>Body structure</code> <code>Substance</code>；关系如 <code>finding site</code> <code>causative agent</code> <code>associated morphology</code>','<b>本体推理在真实世界的最大规模应用。</b>它用 OWL 2 EL 表达，靠推理机自动维护数十万概念的分类层次——人工维护这个规模的层次结构是不可能的。临床医生记录「左下叶肺炎」，系统能自动推出它属于「下呼吸道感染」「肺部疾病」，从而正确进入统计、计费和临床决策支持。'],
+ ['ICD-11 / LOINC','WHO / Regenstrief Institute','ICD-11 有数万个可编码条目；LOINC 覆盖约十万级检验检查项','ICD-11 采用了本体化的基础组件（Foundation）架构；LOINC 用六个维度唯一标识一个检验项','ICD 用于疾病统计与医保结算，LOINC 用于检验结果互通。<b>它们和 SNOMED CT 的映射关系是医疗数据互操作的核心工程。</b>'],
+ ['HL7 FHIR','HL7 International','约 150 个资源类型','<code>Patient</code> <code>Observation</code> <code>Condition</code> <code>MedicationRequest</code> <code>Encounter</code>，通过 Reference 相互引用','医疗数据交换的现行主流标准。<b>FHIR 定义"数据怎么传"，SNOMED CT 定义"内容是什么意思"，两者配合使用</b>——这是理解医疗信息化的关键。'],
+ ['Gene Ontology (GO)','GO Consortium','数万个术语，持续更新','三大分支：<code>Molecular Function</code>（分子功能）、<code>Biological Process</code>（生物过程）、<code>Cellular Component</code>（细胞组分）','生物信息学的基础设施，几乎所有基因功能富集分析都基于它。<b>它证明了一件事：一个设计良好的公共本体可以支撑整个学科几十年的数据积累与复用。</b>'],
+ ['药物研发知识图谱','AstraZeneca、AZ、多家药企与 AI 制药公司','整合文献、临床试验、组学、化合物等多源数据','靶点 — 疾病 — 化合物 — 通路 — 副作用 之间的关联网络','<b>典型价值场景：靶点发现与药物重定位。</b>通过在图上寻找「已上市药物 → 作用靶点 → 该靶点参与的通路 → 另一种疾病」的路径，发现老药新用的可能性。这类问题本质上就是多跳图查询。']]],
+['制造与工业',[
+ ['ISA-95 / IEC 62264','ISA / IEC','标准化的层级与对象模型','设备层级：<code>Enterprise → Site → Area → Work Center → Work Unit</code>；对象：Personnel / Equipment / Material / Process Segment','<b>制造业信息化的通用语言。</b>把它本体化后，MES、ERP、SCADA 的数据能挂在同一棵设备树上，「这条产线昨天的良率」才有唯一确定的含义。'],
+ ['IOF（Industrial Ontologies Foundry）','工业界与学术界联合，以 BFO 为顶层','模块化：Core、Maintenance、Supply Chain、Production Planning 等','制造过程、物料、设备、维护事件的标准化概念','正在成为工业本体的公共基础，目标是让不同厂商的工业软件能交换有语义的数据，而不只是交换数字。'],
+ ['Asset Administration Shell（AAS）','德国 Industrie 4.0 平台，IEC 63278','每台设备一个「数字管理壳」','Submodel（子模型）承载技术参数、文档、运行数据、能力描述','<b>数字孪生的标准化载体。</b>它解决的问题是：一台设备从设计、制造、安装到运维，跨越多个厂商和系统，靠什么保持身份和语义一致——答案是本体化的资产模型。'],
+ ['IEC 61970 CIM','IEC，电力行业','覆盖发输变配用全环节','<code>ConductingEquipment</code> <code>Terminal</code> <code>ConnectivityNode</code> <code>Breaker</code> <code>PowerTransformer</code>','电网调度系统之间交换模型和实时数据的强制标准。<b>本体在这里不是锦上添花，是电网互联的物理前提。</b>']]],
+['零售与供应链',[
+ ['GS1 标准体系','GS1 国际组织','全球商品编码基础设施','<code>GTIN</code>（商品）、<code>GLN</code>（位置/法人）、<code>SSCC</code>（物流单元）、<code>GPC</code> 全球产品分类','<b>你扫的每一个条形码背后都是它。</b>GS1 Web Vocabulary 与 schema.org 做了对齐，让商品数据可以同时服务于供应链和搜索引擎/AI。GTIN 是天然的 InverseFunctional 属性——<b>这是零售业做实体对齐最省力的抓手。</b>'],
+ ['schema.org Product / Offer','—','—','<code>Product</code> <code>Offer</code> <code>AggregateRating</code> <code>Brand</code> <code>gtin13</code>','电商详情页的标准标注方式。做好了，商品能被搜索引擎和 AI 助手正确理解与推荐。'],
+ ['电商商品知识图谱','大型电商平台的内部实践（如阿里的商品与概念图谱、美团的生活服务图谱等）','亿级实体','商品 — 品类 — 品牌 — 属性 — 场景 — 用户意图 的多层网络','<b>核心价值是把「用户说的话」和「平台的商品结构」对齐。</b>用户搜「露营装备」，平台里没有这个类目，但图谱知道它关联帐篷、天幕、折叠椅、便携炉具——这是搜索和推荐质量的分水岭。'],
+ ['供应链风险图谱','制造与零售企业的合规实践','—','企业 — 股权 — 工厂 — 物料 — 产地 — 制裁名单 — 运输路线','疫情、地缘冲突、制裁清单让这类图谱从「加分项」变成「必需品」。<b>典型问题：我们的二级、三级供应商里有没有涉及受限地区的？</b>这是纯粹的多跳穿透问题。']]],
+['企业落地案例',[
+ ['Google 知识图谱','Google','约 50 亿实体 / 5000 亿事实（2020）','Knowledge Graph：把搜索从「字符串匹配」升级为「实体匹配」','直接催生了 schema.org 的普及；证明「实体 + 关系 + 推理」范式能在十亿级规模落地'],
+ ['阿里巴巴 AliCoCo','阿里巴巴（SIGMOD 2020）','285 万原子概念 + 526 万电商概念；超 30 亿商品、4000 亿+ 关系','从「行业-类目-商品」的供给视角，转向「用户需求」视角组织商品','淘宝天猫 98% 商品已挂接；搜索需求覆盖率从旧类目 35% 提升到 75%'],
+ ['美团大脑 / GENE','美团','数十亿实体、数百亿三元组','本地生活六层需求图谱：场景需求→场景要素→具象需求→需求对象→行业体系→供给','多源融合后商户类目判别准确率 92%→98%；GENE 把「带 3 岁孩子周末去哪玩」这类场景需求纳入图谱'],
+ ['AstraZeneca 科研知识图谱','AstraZeneca + Ontotext / Elsevier','跨临床·组学·影像·样本四类数据域','Study→Subject→Sample→Observation 的精准医疗队列图谱','跨孤岛队列检索从数周缩短到分钟级；EpiMap 每个癌种 top-10 靶点预测含 3 个新候选。教训：图是导航工具而非数据库，最难的是采纳而非架构']
+]]];
+$('#caseTabs').innerHTML=CASES.map((c,i)=>`<button class="${i===0?'on':''}" data-i="${i}">${c[0]}</button>`).join('');
+$('#casePanes').innerHTML=CASES.map((c,i)=>`<div class="pane ${i===0?'on':''}" data-i="${i}">
+${c[1].map(x=>`<div class="card"><div style="display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;align-items:baseline">
+<h4 style="margin:0;font-size:16px">${x[0]}</h4><span style="font-size:12px;color:var(--ink3)">${x[1]}</span></div>
+<div class="kv" style="margin-top:10px"><b>规模</b><span>${x[2]}</span></div>
+<div class="kv"><b>关键概念</b><span>${x[3]}</span></div>
+<div class="kv" style="border:none"><b>解决什么</b><span>${x[4]}</span></div></div>`).join('')}</div>`).join('');
+$$('#caseTabs button').forEach(b=>b.onclick=()=>{const i=b.dataset.i;
+  $$('#caseTabs button').forEach(x=>x.classList.toggle('on',x===b));
+  $$('#casePanes .pane').forEach(p=>p.classList.toggle('on',p.dataset.i===i));});
+
+/* ---------- 15 七步法 ---------- */
+const STEPS=[
+['确定领域与范围','先回答三个问题：这个本体覆盖什么领域？谁来用、用来干什么？<b>它必须能回答哪些问题</b>（这就是能力问题）？',
+ '范围失控是本体项目第一杀手。有人想「把全公司都建模一遍」，两年后交付了一个 3000 个类、没人敢用的怪物。<b>先框定一个业务域，20–50 个类起步。</b>'],
+['考察能否复用现有本体','查一下你的行业有没有现成标准：金融看 FIBO，医疗看 SNOMED/FHIR，制造看 ISA-95/IOF，商品看 GS1，通用概念看 schema.org 和 Gist。',
+ '「不是我们造的所以不好用」是最贵的偏见。复用不等于全盘照搬，<b>典型做法是引入上层概念、在下面扩展自己的子类</b>，既省时间又获得外部互通性。'],
+['列举领域中的重要术语','不管三七二十一，先把这个领域里所有重要的名词和动词列出来——设备、工单、故障、维修、备件、报修、派工、验收……先不管谁是类、谁是属性。',
+ '这一步要拉着业务专家一起做，用他们的原话记录。<b>本体的第一价值就是把业务口头语言显性化</b>，急着抽象反而丢信息。'],
+['定义类与类层次','把上一步的名词整理成类，建立 is-a 层次。这是「中间开花」发挥作用的地方：从最有共识的核心概念出发，向上抽象、向下细化。',
+ '<b>最常见的错误：把「关系」建成了「类」。</b>「供应」不是一个类，是一个关系。另一个错误是把属性值建成子类——「红色汽车」不该是「汽车」的子类，颜色应该是属性。'],
+['定义类的属性','给每个类定义它的对象属性（连到别的类）和数据属性（连到字面量）。这一步开始出现真正的信息结构。',
+ '属性应该定义在<b>最一般的、有意义的那一层</b>。如果「名称」对所有法人实体都适用，就定义在 LegalEntity 上，不要在每个子类重复定义。'],
+['定义属性的面（Facets）','为每个属性指定值类型、定义域、值域、基数（可选/必填/最多一个）、以及 OWL 特性（传递、对称、逆、函数性）。',
+ '<b>这一步是本体推理能力的来源，也是最容易被跳过的一步。</b>很多所谓「企业本体」到第 5 步就停了，结果只是画了张漂亮的 ER 图，没有任何推理价值。'],
+['创建实例','把真实数据按本体灌进去，形成知识图谱。通常通过 R2RML/RML 映射关系库，或用 LLM 从文档里抽取。',
+ '<b>务必尽早灌真实数据。</b>本体在纸上永远是完美的，一接真实数据立刻暴露问题：这个字段有 30% 是空的、那个编码有五种格式、这两张表的「客户」根本不是一回事。<b>先小批量跑通，再规模化。</b>']];
+$('#stepBtns').innerHTML=STEPS.map((s,i)=>`<button data-i="${i}" class="${i===0?'on':''}">${i+1} · ${s[0]}</button>`).join('');
+function showStep(i){$$('#stepBtns button').forEach((b,j)=>b.classList.toggle('on',i===j));
+ $('#stepName').textContent='第 '+(i+1)+' 步';
+ $('#stepBox').innerHTML=`<div class="fade"><h4 style="margin:0 0 8px">${STEPS[i][0]}</h4><p style="margin:0 0 12px">${STEPS[i][1]}</p>
+ <div class="note w" style="margin:0"><b>实战提醒：</b>${STEPS[i][2]}</div></div>`;}
+$$('#stepBtns button').forEach(b=>b.onclick=()=>showStep(+b.dataset.i));showStep(0);
+
+/* ---------- 16 陷阱 ---------- */
+const TRAPS=[
+['追求「完美的、完整的」本体','团队花两年建了一个覆盖全公司、有 2000 个类的本体，交付时发现没有任何一个系统在用它。',
+ '本体的价值来自被使用，不是来自完整。<b>用能力问题严格框定范围，两个月内必须有第一个消费方。</b>宁可建一个 30 个类但被三个系统调用的本体。'],
+['把本体当成数据库 Schema 来建','直接把 ERP 的 200 张表一对一翻译成 200 个类，字段翻译成属性，交付。',
+ '这样得到的是「用 RDF 语法写的旧模型」，包含了所有历史包袱，且完全没有推理价值。<b>本体应该描述业务，不是描述系统。</b>正确做法是从业务概念出发，再把表映射过去。'],
+['类与实例混淆','把「iPhone 15 Pro」建成一个类，还是一个实例？把「北京」建成 City 的实例，还是一个类？',
+ '判断标准：<b>它还需要被进一步细分成不同种类吗？</b>「iPhone 15 Pro」作为产品型号是类（下面有具体的每一台机器），作为目录条目是实例。<b>在同一个本体里必须选定一种并保持一致</b>，混用会让推理结果完全错乱。OWL 2 的 punning 允许一个 IRI 同时是类和实例，但要谨慎使用。'],
+['滥用 owl:sameAs','为了「打通数据」，把看起来差不多的实体一律 sameAs 起来。',
+ '<code>sameAs</code> 语义极强——它意味着两者<b>在所有方面完全等同</b>，属性会双向传播。把「北京市」和「北京市政府」sameAs，会导致一连串荒谬推论。<b>相似不等于相同</b>，关系弱的场景请用 <code>skos:closeMatch</code>、<code>skos:exactMatch</code> 或自定义属性。'],
+['IRI 命名策略混乱','用中文名做 IRI、用会变的业务编码做 IRI、每个团队一套命名风格。',
+ 'IRI 一旦发布出去被引用，改动成本极高。<b>规则：用不透明的稳定标识（UUID 或内部序列），名称放在 <code>rdfs:label</code> 里；统一域名和路径规范；永不复用已废弃的 IRI。</b>'],
+['没有治理，本体逐渐腐化','项目结束顾问撤场，本体文件躺在某个 Git 仓库里，一年后没人知道该改哪里、谁能批准。',
+ '<b>必须有明确的本体管家（Ontology Steward）和变更评审流程。</b>本体是活资产，需要版本管理、弃用流程、以及和数据管道的联动测试。没有治理机制的本体，两年内必然失效。'],
+['闭门造车，脱离业务问题','知识工程师躲在房间里研读 BFO，产出了一个哲学上无懈可击但业务方看不懂的本体。',
+ '<b>检验标准很简单：拿去讲给一线业务同事听，他听不懂的地方就是错的。</b>本体的第一属性是「共享的」——不能被共享理解的本体，形式化程度再高也是废的。'],
+['忽视与现有数据源的映射','本体建得很漂亮，但没人知道 <code>:Customer</code> 对应哪张表哪个字段，数据永远灌不进去。',
+ '<b>映射（R2RML / RML）应该和本体同步设计，不是事后补。</b>每定义一个类和属性，就要能说清它的数据从哪来。做不到的，说明这个概念暂时不该进本体。'],
+['一上来就追求重量级 OWL 推理','用了大量基数约束、类的交并补、复杂 Restriction，结果推理机在真实数据量上跑几小时不出结果。',
+ '<b>表达力和性能是零和的。</b>先用 RDFS + 少量 OWL 特性（传递、逆、InverseFunctional）跑起来，需要时再选合适的 OWL 2 Profile（企业场景通常选 RL）。<b>能用规则引擎解决的，不要上完整描述逻辑推理机。</b>'],
+['把本体当银弹，忽视数据质量','以为建了本体，脏数据就自动干净了。',
+ '<b>恰恰相反：本体会把数据质量问题放大并暴露出来。</b>原本各自为政时看不出的矛盾，在统一语义下立刻变成一致性冲突。这其实是好事——但项目预算和排期里<b>必须预留数据治理的工作量</b>，通常比建本体本身还大。']];
+$('#trapList').innerHTML=TRAPS.map((t,i)=>`<div class="acc"><div class="q"><span>${String(i+1).padStart(2,'0')} · ${t[0]}</span><span class="ic">+</span></div>
+<div class="a"><div class="kv" style="margin-top:10px"><b>典型表现</b><span style="color:var(--ink)">${t[1]}</span></div>
+<div class="kv" style="border:none"><b>怎么规避</b><span style="color:var(--teal)">${t[2]}</span></div></div></div>`).join('');
+
+/* ---------- 18 术语表 ---------- */
+const GLOSS=[
+['Ontology 本体','对某个领域中概念、关系及其约束的形式化、共享的规范说明。企业语境下常指「机器可读的业务语义模型」。'],
+['Knowledge Graph 知识图谱','按本体组织的大规模实例数据网络。本体是模具，知识图谱是铸件。'],
+['Taxonomy 分类法','只有父子层级关系的概念体系，是本体的一个子集。'],
+['Triple 三元组','主语-谓语-宾语，RDF 的基本数据单元。'],
+['IRI','国际化资源标识符，本体中每个概念和实体的全球唯一名字，可以是一个可访问的网址。'],
+['RDF / RDFS','数据模型标准 / 轻量类型系统（子类、子属性、定义域、值域）。'],
+['OWL','Web Ontology Language，基于描述逻辑的本体语言，提供推理能力。有 EL / QL / RL 三个 Profile。'],
+['SHACL','形状约束语言，用于数据质量校验。封闭世界语义，违反即报错。<b>与 OWL 分工：OWL 推理，SHACL 校验。</b>'],
+['SPARQL','RDF 图的查询语言，核心是图模式匹配，支持属性路径与联邦查询。'],
+['Reasoner 推理机','根据本体公理自动推导隐含事实、并检测不一致的引擎。常见有 HermiT、Pellet、ELK。'],
+['OWA / CWA','开放世界假设 / 封闭世界假设。本体默认 OWA（没记录 = 未知），数据库是 CWA（没记录 = 不存在）。'],
+['UNA','唯一命名假设。数据库默认成立，OWL 默认不成立，因此需要 <code>owl:sameAs</code> / <code>owl:differentFrom</code>。'],
+['Materialization 物化','把推理出的三元组实际存进图里，用空间换查询速度。'],
+['LPG 属性图','Labeled Property Graph，Neo4j 等采用的图模型，节点和边都可直接带属性。'],
+['Competency Question','能力问题。本体建成后必须能回答的业务问题，用作范围界定与验收标准。'],
+['R2RML / RML / OBDA','把关系库等数据源映射成 RDF 的标准；OBDA 指不搬数据、查询时实时翻译的虚拟化方式。'],
+['GraphRAG','用知识图谱增强的检索增强生成。相对纯向量 RAG，擅长多跳推理、全局汇总与可溯源。'],
+['Semantic Layer 语义层','数据平台中定义业务指标与维度口径的一层，可视为面向分析场景的轻量本体。'],
+['Schema-Guided Extraction','用本体作为 schema 约束 LLM 的信息抽取，保证产出的图结构一致、可对齐。'],
+['Role Modeling 角色建模','把「供应商」「客户」建模为实体扮演的角色而非互斥的类，是企业本体的关键建模模式。']];
+$('#glossary').innerHTML='<table>'+GLOSS.map(g=>`<tr><td style="width:190px">${g[0]}</td><td>${g[1]}</td></tr>`).join('')+'</table>';
+</script>
+</body>
+</html>
