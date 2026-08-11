@@ -1,0 +1,6 @@
+numpy>=1.26
+requests>=2.31
+# 如需支持 .pdf，取消下一行注释并安装：pip install pypdf
+# pypdf>=4.0
+# 如需支持 .docx，取消下一行注释并安装：pip install python-docx
+# python-docx>=1.1
