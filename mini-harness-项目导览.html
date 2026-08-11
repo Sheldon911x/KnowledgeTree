@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>mini-harness 项目导览 · 手写迷你 Claude Code</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: "Microsoft YaHei", "PingFang SC", sans-serif; background: #f5f6f8; color: #2b2f36; line-height: 1.7; padding: 32px 16px; }
+  .card { max-width: 860px; margin: 0 auto; background: #fff; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,.06); padding: 40px 44px; }
+  h1 { font-size: 24px; margin-bottom: 6px; }
+  .sub { color: #6b7280; font-size: 14px; margin-bottom: 24px; }
+  .formula { background: #1f2937; color: #a5f3fc; font-family: Consolas, monospace; font-size: 17px; text-align: center; padding: 14px; border-radius: 8px; margin: 18px 0 28px; letter-spacing: 1px; }
+  h2 { font-size: 17px; margin: 28px 0 12px; padding-left: 10px; border-left: 4px solid #2563eb; }
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; margin-bottom: 8px; }
+  th, td { border: 1px solid #e5e7eb; padding: 8px 10px; text-align: left; vertical-align: top; }
+  th { background: #f1f5f9; font-weight: 600; white-space: nowrap; }
+  .tag { display: inline-block; background: #eff6ff; color: #2563eb; border-radius: 4px; padding: 1px 8px; font-size: 12px; margin-right: 4px; }
+  .note { background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; padding: 12px 16px; font-size: 13.5px; margin-top: 10px; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .pt { background: #f8fafc; border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px 14px; font-size: 13.5px; }
+  .pt b { color: #2563eb; }
+  code { background: #f1f5f9; padding: 1px 6px; border-radius: 4px; font-family: Consolas, monospace; font-size: 12.5px; }
+  .rel { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 12px 16px; font-size: 13.5px; }
+</style>
+</head>
+<body>
+<div class="card">
+
+<h1>mini-harness 项目导览</h1>
+<p class="sub">手写一个迷你 Claude Code，搞懂 Harness Engineering · 状态：说明书完成，六阶段实操进行中</p>
+
+<p><b>一句话：</b>不用任何 Agent 框架（铁律：禁 LangChain / LlamaIndex），只用 Python + Ollama 本地模型，从零手写一个能读写文件、执行命令的命令行小助手——逐层拆透"模型之外的 90% 工程"，即 <b>harness（马具/脚手架）</b>。</p>
+
+<div class="formula">Agent = Model + Harness</div>
+
+<h2>🧩 Harness 六组成 = 本项目六阶段</h2>
+<table>
+  <tr><th>#</th><th>阶段</th><th>要写的东西</th><th>对应知识点</th><th>验收实验</th></tr>
+  <tr><td>1</td><td>最小循环</td><td>core.py（约 60 行）</td><td>Agent Loop 是所有 harness 的骨架</td><td>跑通 a.txt 统计，观察 messages 增长</td></tr>
+  <tr><td>2</td><td>工具层</td><td>工具注册表：write_file / list_dir / run_command</td><td>Tool schema 写法直接决定调用成功率</td><td>工具描述写烂 vs 写好，对比成功率</td></tr>
+  <tr><td>3</td><td>上下文工程</td><td>token 估算、结果截断、历史摘要压缩</td><td>Context rot：上下文一长错误率就上升</td><td>连读 20 个文件，压缩开/关各跑一次</td></tr>
+  <tr><td>4</td><td>权限与安全</td><td>写/跑命令前 y/n 确认、sandbox 沙箱、JSONL 审计</td><td>权限三段式：永拒 / 永许 / 需确认</td><td>诱导"删除上级目录"，看护栏是否拦住</td></tr>
+  <tr><td>5</td><td>持久化</td><td>会话落盘可续跑、任务笔记跨轮记忆</td><td>模型是无状态的，记忆是 harness 给的</td><td>跑到一半 Ctrl+C，重启能否续跑</td></tr>
+  <tr><td>6</td><td>A/B 实验台</td><td>10 个固定任务 + 自动判分 + 配置开关</td><td>harness 核心命题：变量隔离实验</td><td>产出第一张对比表</td></tr>
+</table>
+
+<h2>⚙️ 技术栈（与 rag-mvp 同一套本地底座）</h2>
+<table>
+  <tr><th>层</th><th>选择</th><th>理由</th></tr>
+  <tr><td>语言</td><td>Python 3.10+</td><td>学习成本低</td></tr>
+  <tr><td>模型运行时</td><td>Ollama</td><td>本地、免费、OpenAI 兼容 API</td></tr>
+  <tr><td>模型</td><td>qwen2.5:3b（备选 7b / qwen3:8b）</td><td>原生支持 tool calling；<b>弱模型更能暴露 harness 设计优劣</b>——翻车本身就是学习素材</td></tr>
+  <tr><td>依赖</td><td>仅 requests</td><td>每行代码都是 harness 本身</td></tr>
+</table>
+
+<h2>🔍 第 1 阶段：60 行代码里的 4 个 harness 设计要点</h2>
+<div class="grid">
+  <div class="pt"><b>① 循环刹车</b><br><code>MAX_STEPS = 10</code>：小模型可能反复调工具停不下来，harness 必须有兜底。</div>
+  <div class="pt"><b>② 错误回填</b><br>工具失败不崩程序，把异常文本喂回模型——它读到错误后往往能自我纠正。</div>
+  <div class="pt"><b>③ 低随机性</b><br><code>temperature = 0.1</code>：小模型做工具调用时输出更稳定。</div>
+  <div class="pt"><b>④ 结果回填</b><br>工具结果以 <code>role: tool</code> 追加进 messages 数组——这个膨胀中的数组就是"上下文"，harness 的核心管理对象。</div>
+</div>
+
+<h2>🧪 阶段 6 的 A/B 实验设计（全书精华）</h2>
+<p style="font-size:13.5px;margin-bottom:8px">固定同一个模型、同一批任务，<b>每次只改一个 harness 变量</b>：</p>
+<table>
+  <tr><th>实验</th><th>变量 A vs B</th><th>预期看到</th></tr>
+  <tr><td>E1</td><td>工具描述：一句话 vs 带示例详细描述</td><td>弱模型工具调用成功率可能差 2~3 倍</td></tr>
+  <tr><td>E2</td><td>系统提示：50 词 vs 500 词分层指令</td><td>提示不是越长越好，注意力会被稀释</td></tr>
+  <tr><td>E3</td><td>工具结果：全文回填 vs 截断+摘要</td><td>上下文膨胀如何拖垮后续推理</td></tr>
+  <tr><td>E4</td><td>错误回填：原始异常 vs 结构化纠错提示</td><td>同样的错，"喂法"不同，自我恢复率不同</td></tr>
+</table>
+
+<h2>🔗 与本仓库 RAG 主题线的关系</h2>
+<div class="rel">
+同一套底座（Ollama + qwen2.5:3b），两条线各练一半：<b>RAG 线（rag-mvp）练"检索"</b>——怎么把对的资料找给模型；<b>本线练"行动"</b>——怎么让模型安全地调用工具、循环完成任务。两者合起来，就是一个完整 Agent 产品的两大支柱。文档第 8 节还预留了钩子：阶段 6 的 <code>run()</code> 签名直接对接下一个项目 Loop engineering；工具注册表就是未来 multi-agent 的 <code>spawn_agent</code> 雏形。
+</div>
+
+<div class="note">
+<b>📌 当前状态：</b>完整说明书（含第 1 阶段全部代码、排错 FAQ、10 个评估任务模板）见 <code>mini-harness/mini-harness-项目说明文档.md</code>。阶段 2~6 的实操代码尚未开始——跑完哪一阶段，就把对应代码和实验记录补进 <code>mini-harness/</code> 目录。
+</div>
+
+</div>
+</body>
+</html>

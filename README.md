@@ -16,6 +16,17 @@
 | 2 | [rag-mvp/](./rag-mvp/) | 代码项目 | 纯本地零成本手写 RAG（Ollama + bge-m3 + qwen2.5:3b），dense / bm25 / hybrid 三模式 + 黄金集评测 |
 | 3 | [rag-mvp-项目复盘.html](./rag-mvp-项目复盘.html) | 复盘卡 | 一页复现指南 + Recall@4 实测数据 + 5 条核心认知 |
 
+## 🧵 主题线：Agent / Harness 工程
+
+学习路径：说明书（含第 1 阶段完整代码）→ 六阶段实操 → A/B 实验台
+
+| # | 条目 | 形态 | 一句话 |
+|---|------|------|--------|
+| 1 | [mini-harness/](./mini-harness/) | 学习说明书 | 手写迷你 Claude Code：Agent = Model + Harness，拆透模型之外的 90% 工程 |
+| 2 | [mini-harness-项目导览.html](./mini-harness-项目导览.html) | 导览卡 | 一页看懂六阶段路线图 + 60 行代码的 4 个设计要点 + A/B 实验设计 |
+
+与 RAG 线的关系：同一套本地底座（Ollama + qwen2.5:3b）——RAG 线练「检索」（把对的资料找给模型），本线练「行动」（让模型安全地调工具、循环完成任务）。
+
 ## 🧵 主题线：数据本体（Ontology）
 
 | # | 条目 | 形态 | 一句话 |
