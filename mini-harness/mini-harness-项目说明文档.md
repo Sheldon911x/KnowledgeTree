@@ -203,6 +203,8 @@ python core.py
 
 ## 7. 六阶段路线图（全程约 2 周，每阶段 1~2 晚）
 
+> **当前进度**：✅ 阶段 1 最小循环已收官（四格归因实验闭合 + 双保险常驻，复盘见根目录 Day1 学习记录）｜🔵 阶段 2 工具层进行中（四工具版 core.py 已部署：read / list_dir / write / run_command）
+
 | # | 阶段 | 你要写的东西 | 对应 harness 知识点 | 验收实验 |
 |---|---|---|---|---|
 | 1 | 最小循环 | 上面的 core.py | Agent Loop 是所有 harness 的骨架 | 跑通 a.txt 统计，观察 messages 增长 |

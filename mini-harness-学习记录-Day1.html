@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>mini-harness 学习记录 · Day 1</title>
+<style>
+  :root { --ink:#1f2329; --sub:#646a73; --line:#e5e6eb; --accent:#3370ff; --bg:#f7f8fa; --card:#ffffff; --code:#282c34; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font-family:"Segoe UI","Microsoft YaHei",sans-serif; line-height:1.75; }
+  .wrap { max-width:880px; margin:0 auto; padding:48px 24px 80px; }
+  header.hero { background:linear-gradient(135deg,#1f2329,#344054); color:#fff; border-radius:16px; padding:36px 40px; margin-bottom:32px; }
+  header.hero .tag { display:inline-block; background:var(--accent); font-size:12px; padding:2px 10px; border-radius:20px; letter-spacing:1px; }
+  header.hero h1 { margin:12px 0 8px; font-size:28px; }
+  header.hero p { margin:0; color:#c8ccd4; font-size:15px; }
+  section { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:28px 32px; margin-bottom:24px; }
+  h2 { font-size:20px; margin:0 0 6px; padding-left:12px; border-left:4px solid var(--accent); }
+  h2 .no { color:var(--accent); margin-right:6px; }
+  .lead { color:var(--sub); font-size:14px; margin:0 0 18px; padding-left:16px; }
+  table { width:100%; border-collapse:collapse; font-size:14px; margin:14px 0; }
+  th { background:#f2f4f7; text-align:left; }
+  th, td { border:1px solid var(--line); padding:8px 12px; vertical-align:top; }
+  tr:nth-child(even) td { background:#fafbfc; }
+  code { font-family:Consolas,"Courier New",monospace; background:#eef1f5; padding:1px 6px; border-radius:4px; font-size:13px; }
+  pre { background:var(--code); color:#e6e6e6; border-radius:10px; padding:16px 20px; overflow-x:auto; font-size:13px; line-height:1.7; }
+  pre code { background:none; color:inherit; padding:0; }
+  .ok { color:#0f7b3d; font-weight:600; }
+  .bad { color:#c0392b; font-weight:600; }
+  .callout { background:#f0f6ff; border-left:4px solid var(--accent); border-radius:0 10px 10px 0; padding:14px 18px; margin:16px 0; font-size:14px; }
+  .callout.warn { background:#fff7ed; border-color:#f79009; }
+  .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  .mini { background:#fafbfc; border:1px solid var(--line); border-radius:10px; padding:14px 18px; font-size:14px; }
+  .mini b { display:block; margin-bottom:6px; }
+  footer { text-align:center; color:var(--sub); font-size:13px; margin-top:40px; }
+  @media (max-width:640px){ .grid2{grid-template-columns:1fr;} section{padding:20px;} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="hero">
+  <span class="tag">学习记录 · DAY 1</span>
+  <h1>mini-harness：第一个可归因的对照实验 + Python 扫盲第一课</h1>
+  <p>核心收获一句话：模型动嘴（读上下文、生成文本），harness 动手（执行、拼接、捕获、回填、再调用）——core.py 就是 harness，模型只是它调用的外部服务。</p>
+</header>
+
+<section>
+  <h2><span class="no">01</span>实验矩阵：四格完整闭合</h2>
+  <p class="lead">第一个严格遵循"单变量原则"的 harness 对照实验。变量只有两个：工具描述是否带正反示例、read_file 是否带路径归一化容错。</p>
+  <table>
+    <tr><th>#</th><th>描述强化</th><th>归一化容错</th><th>结果</th><th>归因</th></tr>
+    <tr><td>1</td><td>❌ 模糊描述</td><td>❌</td><td class="bad">失败：模型传 sandbox/a.txt，还转述了污染路径</td><td>模型犯错，无人兜底</td></tr>
+    <tr><td>2</td><td>✅</td><td>✅</td><td class="ok">成功</td><td>混合变量，无法归因（反面教材）</td></tr>
+    <tr><td>3</td><td>✅</td><td>❌ 注释掉</td><td class="ok">成功</td><td><b>行为成功</b>：模型压根没犯错</td></tr>
+    <tr><td>4</td><td>❌ 模糊描述</td><td>✅</td><td class="ok">成功：介入日志首次实战打出</td><td><b>兜底成功</b>：模型犯了错，被静默修复</td></tr>
+  </table>
+  <div class="callout">严谨性注：每格 n=1，但跨格互证——模糊描述下模型 2/2 犯同一错，强化描述下 2/2 传对。错误模式稳定，结论可信。想更严格可每格补跑到 3 次。</div>
+</section>
+
+<section>
+  <h2><span class="no">02</span>核心概念：行为成功 vs 兜底成功</h2>
+  <p class="lead">两种"成功"看着一样，本质完全不同。这是防御性 harness 的全部含义。</p>
+  <table>
+    <tr><th></th><th>行为成功（描述强化）</th><th>兜底成功（归一化）</th></tr>
+    <tr><td><b>本质</b></td><td>模型<b>没犯错</b></td><td>模型<b>犯了错，被 harness 静默修复</b></td></tr>
+    <tr><td><b>可迁移性</b></td><td>✅ 好习惯能迁移到别的工具</td><td>❌ 只防住这一个工具的这一类错</td></tr>
+    <tr><td><b>代价</b></td><td>提示词更长，且永不保证 100%</td><td>每个工具都要写容错代码</td></tr>
+    <tr><td><b>工程结论</b></td><td>该做</td><td><b>更该做——它是保险丝</b></td></tr>
+  </table>
+  <div class="callout">双保险原则：描述强化降低犯错概率，归一化兜住漏网之鱼。正式配置 = 两者常驻。</div>
+  <div class="callout warn"><b>可观测性：</b>正确答案 ≠ 健康过程。格 4 若没有那行介入日志 <code>[harness] 路径归一化介入: sandbox/a.txt -&gt; a.txt</code>，从输出完全看不出模型犯了错。真实 harness 全靠日志发现"系统看着健康，其实错误率在爬升"。</div>
+  <div class="callout warn"><b>双刃剑：</b>归一化让错误对模型"隐身"——上下文干净了，但模型永远不知道自己习惯有问题。成熟策略：可自动修复的错误静默兜底 + 记日志；不可修复的才回填给模型。</div>
+</section>
+
+<section>
+  <h2><span class="no">03</span>Python 第一课：等号不是"相等"，是"装进盒子"</h2>
+  <p class="lead">编程的 = 是赋值动作：先算右边的值，再装进左边的盒子。同一行里两个 path 不是同一时刻的东西。</p>
+  <pre><code>path = path.replace("\\", "/")
+       └──────┬──────┘
+   第①步：用 path 盒子里的【旧值】算出新字符串
+└─┬─┘
+  第②步：新字符串装回 path 盒子，旧值被顶掉、丢弃</code></pre>
+  <table>
+    <tr><th>符号</th><th>读作</th><th>干什么</th><th>例子</th></tr>
+    <tr><td><code>=</code></td><td>赋值</td><td>把右边装进左边（动作）</td><td><code>raw = path</code></td></tr>
+    <tr><td><code>==</code></td><td>等于</td><td>问"一样吗"，答 True/False</td><td><code>path == "a.txt"</code></td></tr>
+    <tr><td><code>!=</code></td><td>不等于</td><td>问"不一样吗"</td><td><code>if path != raw:</code></td></tr>
+  </table>
+  <div class="callout"><b>为什么需要 raw = path 提前拍照：</b>旧值一旦被顶掉就永远消失。没有存档，就没法做"介入检测"（path != raw 时才打日志）。</div>
+</section>
+
+<section>
+  <h2><span class="no">04</span>读懂代码的三板斧</h2>
+  <p class="lead">遇到陌生代码的固定打法，今天全部实战过。</p>
+  <div class="grid2">
+    <div class="mini"><b>① 翻译方法名</b>方法名就是英语单词本义：replace=替换、startswith=以…开头、len=长度、read=读、print=打印。读懂代码第一步是翻译。</div>
+    <div class="mini"><b>② 盯盒子的进出</b>每个变量是一个贴标签的盒子。赋值=复制内容进盒子；旧值没存档就永远消失。</div>
+    <div class="mini"><b>③ 确认执行顺序</b>先归一化切前缀，后拼接路径——顺序反了就会拼出 sandbox/sandbox/a.txt。</div>
+    <div class="mini"><b>对象类型决定工具箱</b>replace 是字符串的工具，read 是文件对象的工具。盒子装什么类型，就带什么工具。工具清单不用背，用阅读量养出"地图感"。</div>
+  </div>
+  <table>
+    <tr><th>知识点</th><th>一句话记住</th></tr>
+    <tr><td>反斜杠 <code>\</code></td><td>Windows 路径分隔符 + 字符串转义符（
+ 换行）；想表示货真价实的反斜杠要写两个 <code>\\</code></td></tr>
+    <tr><td>f-string</td><td>字符串前加 f 是总开关；每个 {} 在打印瞬间填入当前值；{} 里还能放表达式如 <code>{len(path)}</code></td></tr>
+    <tr><td>变量命名</td><td>prefix 就叫"前缀"，因为装的就是要检查的开头一截。起名用有词义的英语，让代码像文章一样能读</td></tr>
+    <tr><td>removeprefix</td><td>"直接删前缀"的专用武器（Python 3.9+）；切片是通用武器。专用武器更好读，通用武器什么都能干</td></tr>
+    <tr><td>容错的本质</td><td>Python 对"前缀"一无所知——候选前缀是人工枚举的。<b>harness 容错层是事故的纪念碑：你只能防住你预见到的错误</b></td></tr>
+  </table>
+</section>
+
+<section>
+  <h2><span class="no">05</span>模型动嘴，harness 动手：首次失败事件七步还原</h2>
+  <p class="lead">Agent 系统的根本分工。标出每一步的责任人，就不会把拼接、回填记到模型头上。</p>
+  <table>
+    <tr><th>步骤</th><th>责任人</th><th>干了什么</th></tr>
+    <tr><td>1</td><td>用户</td><td>命令行执行 <code>python core.py</code></td></tr>
+    <tr><td>2</td><td><b>harness</b></td><td>把任务文本、系统提示、工具清单组装进 messages，发给模型</td></tr>
+    <tr><td>3</td><td><b>模型</b></td><td>读完上下文，在回复里写下一句话："我要调 read_file，参数是 sandbox/a.txt"——只生成文本，什么都没拼接</td></tr>
+    <tr><td>4</td><td><b>harness</b></td><td>取出参数，执行拼接 <code>"./sandbox/" + "sandbox/a.txt"</code> → 打开文件 → 不存在，异常</td></tr>
+    <tr><td>5</td><td><b>harness</b></td><td>捕获异常，错误文本作为 tool 消息回填 messages</td></tr>
+    <tr><td>6</td><td><b>harness</b></td><td>带着更新后的 messages 再次调用模型</td></tr>
+    <tr><td>7</td><td><b>模型</b></td><td>读到错误，没自我纠正，输出最终回答（转述了污染路径）</td></tr>
+  </table>
+  <div class="callout"><b>core.py 就是 harness。</b>模型是住在 localhost:11434 里的 qwen2.5:3b；core.py 里的一切——组装、执行、拼接、捕获、回填、循环——全是 harness 的职责。tool_call 本质也是模型生成的一段特殊格式文本，"模型调工具"其实是"harness 读到模型的话后替它执行"。</div>
+</section>
+
+<section>
+  <h2><span class="no">06</span>下一步</h2>
+  <p class="lead">阶段 2：给助手加 write_file / list_dir / run_command 三个工具，做"烂描述 vs 好描述"成功率对比。write 和 run 能改东西、能执行命令，翻车代价更大，容错设计更重要——同样的打法：单变量、归因矩阵、介入日志。</p>
+</section>
+
+<footer>mini-harness 学习记录 · Day 1 · 由 DinTalClaw 整理生成</footer>
+</div>
+</body>
+</html>
