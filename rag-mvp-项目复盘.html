@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>rag-mvp 项目复盘 · 一页复现卡</title>
+<style>
+  :root{
+    --ink:#1a2332; --sub:#5b6b7f; --line:#e3e8ef; --bg:#f7f9fb;
+    --accent:#0f6fde; --accent-bg:#eef5fd; --ok:#0d8a4f; --warn:#b45309;
+    --mono:"Cascadia Code",Consolas,"Courier New",monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:"Segoe UI","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--ink);line-height:1.7;padding:40px 16px}
+  .page{max-width:880px;margin:0 auto}
+  header{border-bottom:3px solid var(--ink);padding-bottom:20px;margin-bottom:28px}
+  header .tag{display:inline-block;background:var(--ink);color:#fff;font-size:12px;padding:2px 10px;border-radius:3px;letter-spacing:1px;margin-bottom:10px}
+  h1{font-size:28px;margin-bottom:6px}
+  header p{color:var(--sub);font-size:15px}
+  h2{font-size:18px;margin:34px 0 12px;padding-left:10px;border-left:4px solid var(--accent)}
+  h3{font-size:15px;margin:18px 0 8px}
+  p,li{font-size:14.5px}
+  ul,ol{padding-left:22px}
+  table{width:100%;border-collapse:collapse;font-size:13.5px;margin:10px 0;background:#fff}
+  th,td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+  th{background:#f0f3f7;font-weight:600}
+  code{font-family:var(--mono);font-size:13px;background:var(--accent-bg);color:#0b4fa0;padding:1px 5px;border-radius:4px}
+  pre{background:#101826;color:#d7e3f4;padding:14px 16px;border-radius:8px;overflow-x:auto;font-family:var(--mono);font-size:13px;line-height:1.65;margin:10px 0}
+  pre .c{color:#7d8fa8}
+  .card{background:#fff;border:1px solid var(--line);border-radius:10px;padding:16px 18px;margin:12px 0}
+  .flow{display:flex;align-items:stretch;gap:0;margin:14px 0;flex-wrap:wrap}
+  .flow .step{flex:1;min-width:110px;background:#fff;border:1px solid var(--line);border-radius:8px;padding:10px 8px;text-align:center}
+  .flow .step b{display:block;font-size:14px}
+  .flow .step span{font-size:12px;color:var(--sub)}
+  .flow .arrow{align-self:center;padding:0 6px;color:var(--accent);font-weight:700}
+  .pill{display:inline-block;font-size:12px;padding:1px 9px;border-radius:99px;font-weight:600}
+  .pill.ok{background:#e5f6ee;color:var(--ok)}
+  .pill.warn{background:#fdf0e2;color:var(--warn)}
+  .takeaway{counter-reset:t}
+  .takeaway li{list-style:none;position:relative;padding:10px 12px 10px 46px;background:#fff;border:1px solid var(--line);border-radius:8px;margin:8px 0}
+  .takeaway li::before{counter-increment:t;content:counter(t);position:absolute;left:12px;top:11px;width:24px;height:24px;background:var(--accent);color:#fff;border-radius:50%;text-align:center;line-height:24px;font-size:13px;font-weight:700}
+  .takeaway b{color:var(--accent)}
+  footer{margin-top:40px;padding-top:14px;border-top:1px solid var(--line);color:var(--sub);font-size:12.5px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media(max-width:640px){.grid2{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="page">
+
+<header>
+  <div class="tag">学习项目复盘 · 2026-08-06</div>
+  <h1>rag-mvp：纯本地、零成本的最小可用 RAG</h1>
+  <p>一页看懂：这是什么 → 怎么复现 → 实测数据 → 学到了什么。所有信息来自项目真实文件（rag_mvp.py / eval_rag.py / README / golden_demo.csv）。</p>
+</header>
+
+<h2>一、这是什么（30 秒版）</h2>
+<p>不用任何 RAG 框架，用 <b>Python + Ollama 本地模型</b>手写 RAG 五个环节，配三种检索模式对比和黄金集自动评测。目的是搞懂 RAG 的工程全貌，而不是调 API。</p>
+<table>
+  <tr><th>角色</th><th>选型</th><th>说明</th></tr>
+  <tr><td>嵌入模型</td><td><code>bge-m3</code>（Ollama）</td><td>文本 → 向量，支持批量接口</td></tr>
+  <tr><td>生成模型</td><td><code>qwen2.5:3b</code>（Ollama）</td><td>基于检索到的块作答</td></tr>
+  <tr><td>向量库</td><td>numpy 余弦相似度 + JSON 落盘</td><td>无外部服务，<code>vector_store.json</code>（约 4MB）</td></tr>
+  <tr><td>检索</td><td>dense / bm25 / hybrid 三种模式</td><td>BM25 为纯 Python 手写实现，零额外依赖</td></tr>
+  <tr><td>依赖</td><td colspan="2"><code>numpy</code> + <code>requests</code>（+ <code>openpyxl</code> 读 Excel；pypdf / python-docx 可选）</td></tr>
+</table>
+
+<h2>二、架构：RAG 五个环节 = 五个函数</h2>
+<div class="flow">
+  <div class="step"><b>load</b><span>按扩展名加载<br>html 去标签<br>xlsx 一行一块</span></div>
+  <div class="arrow">→</div>
+  <div class="step"><b>chunk</b><span>滑窗切分<br>600 字 / 重叠 100</span></div>
+  <div class="arrow">→</div>
+  <div class="step"><b>embed</b><span>bge-m3<br>批量 32 条/次</span></div>
+  <div class="arrow">→</div>
+  <div class="step"><b>retrieve</b><span>dense / bm25<br>/ hybrid（α=0.6）</span></div>
+  <div class="arrow">→</div>
+  <div class="step"><b>generate</b><span>qwen2.5:3b<br>带检索内容作答</span></div>
+</div>
+<div class="card">
+  <b>多知识库设计：</b><code>--docs</code>（文件或目录）+ <code>--store</code>（索引路径）可把不同数据源建成互不干扰的独立索引。默认总库来自 <code>D:\rag_test_kb</code>（30 个测试文档）；斯达高 Excel 问答集单独存在 <code>kbs/sidaogao.json</code>。
+</div>
+
+<h2>三、怎么复现（照抄即可）</h2>
+<h3>前置条件 checklist</h3>
+<table>
+  <tr><th>#</th><th>条件</th><th>验证方式</th></tr>
+  <tr><td>1</td><td>Ollama 桌面版运行中（http://localhost:11434）</td><td>托盘图标在 / 浏览器打开该地址有响应</td></tr>
+  <tr><td>2</td><td>已 pull 两个模型：<code>bge-m3</code>、<code>qwen2.5:3b</code></td><td><code>ollama list</code> 能看到</td></tr>
+  <tr><td>3</td><td>Python 环境：<code>C:\Users\PC\.workbuddy\binaries\python\envs\default\Scripts\python.exe</code>（依赖已装好）；或自建 venv 后 <code>pip install -r requirements.txt openpyxl</code></td><td>跑第 1 步不报错</td></tr>
+  <tr><td>4</td><td>测试文档就位：<code>D:\rag_test_kb</code>（30 个文档）</td><td>目录存在且非空</td></tr>
+</table>
+
+<h3>四步跑通</h3>
+<pre><span class="c">:: 0. 进入项目目录（以下 python 均指上面那个环境）</span>
+cd /d C:\Users\PC\WorkBuddy\2026-08-06-10-41-09\rag_mvp
+
+<span class="c">:: 1. 建索引（只跑一次；产出 vector_store.json）</span>
+python rag_mvp.py build
+
+<span class="c">:: 2. 问答：单次 / 交互式 / 带调试打分</span>
+python rag_mvp.py ask "公司有哪些产品价格方案？"
+python rag_mvp.py chat
+python rag_mvp.py ask "问题" --debug
+
+<span class="c">:: 3.（可选）给斯达高 Excel 单独建库并问答</span>
+python rag_mvp.py build --docs "D:\飞书文件下载\改版-斯达高知识库问答数据集.xlsx" --store kbs/sidaogao.json
+python rag_mvp.py ask "斯达高的核心业务是什么？" --store kbs/sidaogao.json
+
+<span class="c">:: 4. 评测：改写问题黄金集，三模式对比</span>
+python eval_rag.py --golden golden_demo.csv</pre>
+
+<h3>调参入口（所有开关都在 rag_mvp.py 顶部配置区）</h3>
+<table>
+  <tr><th>开关</th><th>当前值</th><th>什么时候动它</th></tr>
+  <tr><td><code>CHUNK_SIZE / CHUNK_OVERLAP</code></td><td>600 / 100</td><td>文档长、结构强 → 调大；问答细 → 调小。改完必须重新 build</td></tr>
+  <tr><td><code>TOP_K</code></td><td>4</td><td>相关块多就调大到 6~8</td></tr>
+  <tr><td><code>RETRIEVAL_MODE</code></td><td>hybrid</td><td>dense / bm25 / hybrid 三选一，对比实验用</td></tr>
+  <tr><td><code>HYBRID_ALPHA</code></td><td>0.6</td><td>越大越偏语义；专名、编号多就调小（偏关键词）</td></tr>
+</table>
+<p>调试组合技：<code>python rag_mvp.py inspect</code> 看索引统计；<code>ask --debug</code> 看每块 dense / bm25 / 综合三路打分。</p>
+
+<h2>四、实测数据（这次跑出来的）</h2>
+<p>用 <code>golden_demo.csv</code>（8 条<b>改写后</b>的问题，不是原问题）测召回，Recall@4：</p>
+<table>
+  <tr><th>检索模式</th><th>Recall@4</th><th>结论</th></tr>
+  <tr><td>dense（纯向量）</td><td><span class="pill ok">1.000</span></td><td>中文换种说法提问，向量检索扛得住</td></tr>
+  <tr><td>bm25（纯关键词）</td><td><span class="pill warn">0.500</span></td><td>改写后关键词对不上，召回直接腰斩</td></tr>
+  <tr><td>hybrid（混合 α=0.6）</td><td><span class="pill ok">1.000</span></td><td>语义+关键词互补，生产环境底线</td></tr>
+</table>
+
+<h2>五、学习复盘：这次真正学到的 5 件事</h2>
+<ol class="takeaway">
+  <li><b>RAG 的瓶颈在检索，不在生成。</b>评测脚本只测检索层（Recall@K），不调生成模型——因为"找对了块，答案自然对；找错块，生成再强也是脑补"。这也解释了为什么"库外问题脑补"是已知短板。</li>
+  <li><b>中文场景混合检索是底线，不是加分项。</b>改写问题下 BM25 召回只有 0.5。纯关键词检索在中文 paraphrase 面前很脆，必须靠向量兜底。</li>
+  <li><b>"感觉还行"不值钱，黄金集 + 指标才值钱。</b>8 条改写问题 + Recall@K，把调参从玄学变成实验：改配置 → 重 build → 重测 → 比数字。这套闭环可以原样搬进工作里的 RAG 方案评估。</li>
+  <li><b>切块策略必须匹配数据形态。</b>xlsx 问答集按"一行=一块"，绝不被字符窗口切断；普通文档才走 600 字滑窗。一刀切的切块是检索质量的头号隐形杀手。</li>
+  <li><b>把所有开关集中到配置区，是可实验性的前提。</b>改一行参数就能做一组对照实验；如果参数散落在代码各处，对比实验根本做不起来。</li>
+</ol>
+
+<h2>六、已知短板 & 下一步路线</h2>
+<table>
+  <tr><th>方向</th><th>解决什么</th><th>成本</th></tr>
+  <tr><td>生成模型换 <code>qwen2.5:7b</code></td><td>库外问题脑补（幻觉）、回答质量</td><td>低：改一行配置 + pull 模型</td></tr>
+  <tr><td>加 rerank（重排序）</td><td>top-k 相关性，压住 BM25 误命中</td><td>中：多一个模型调用环节</td></tr>
+  <tr><td>向量库换 Chroma / FAISS</td><td>百万级文档、持久化、检索速度</td><td>中：替换存储层</td></tr>
+  <tr><td>支持 PDF / Word</td><td>真实业务文档格式</td><td>低：取消 requirements.txt 注释 + 加加载分支</td></tr>
+</table>
+
+<h2>七、文件清单</h2>
+<table>
+  <tr><th>文件</th><th>作用</th></tr>
+  <tr><td><code>rag_mvp.py</code></td><td>核心代码：加载 / 切分 / 嵌入 / 检索 / 生成，注释详尽（374 行）</td></tr>
+  <tr><td><code>eval_rag.py</code></td><td>检索召回评测：黄金集 + Recall@K + 三模式对比 + 未命中样本定位</td></tr>
+  <tr><td><code>golden_demo.csv</code></td><td>8 条改写问题黄金集（问题, 应命中编号）</td></tr>
+  <tr><td><code>vector_store.json</code></td><td>默认总库索引（build 自动生成，约 4MB，可删可重建）</td></tr>
+  <tr><td><code>kbs/sidaogao.json</code></td><td>斯达高问答集独立索引</td></tr>
+  <tr><td><code>README.md</code></td><td>操作手册（本文档是它的浓缩+复盘版）</td></tr>
+</table>
+
+<footer>
+  数据源：rag_mvp.py（374 行）· eval_rag.py（149 行）· README.md · golden_demo.csv ｜ 项目路径：C:\Users\PC\WorkBuddy\2026-08-06-10-41-09\rag_mvp ｜ 生成于 2026-08-06
+</footer>
+
+</div>
+</body>
+</html>
